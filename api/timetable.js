@@ -178,6 +178,55 @@ function parseResponse(html, view) {
   return result;
 }
 
+// Merge exams/events into timetable grid
+function mergeIntoGrid(data, examsItems, eventsItems) {
+  if (!data.days || !data.days.length) return data;
+
+  const allItems = [
+    ...examsItems.map(e => ({ ...e, marker: '📝' })),
+    ...eventsItems.map(e => ({ ...e, marker: '🎉' }))
+  ];
+
+  for (const item of allItems) {
+    if (!item.date || !item.hour) continue;
+
+    // Find matching day by date (dd.mm.yyyy → dd.mm)
+    const shortDate = item.date.substring(0, 5); // "22.03" from "22.03.2026"
+    const dayIdx = data.days.findIndex(d => d.date === shortDate);
+    if (dayIdx < 0) continue;
+
+    // Parse hour(s) — could be single "5" or range "7-10"
+    let startHour, endHour;
+    if (item.hour.includes('-')) {
+      const parts = item.hour.split('-').map(Number);
+      startHour = parts[0];
+      endHour = parts[1];
+    } else {
+      startHour = parseInt(item.hour);
+      endHour = startHour;
+    }
+
+    if (isNaN(startHour)) continue;
+
+    // Inject into each hour cell
+    for (let h = startHour; h <= endHour && h < data.days[dayIdx].lessons.length; h++) {
+      const existing = data.days[dayIdx].lessons[h] || '';
+      const eventText = `${item.marker} ${item.type || item.raw || ''}`;
+      if (existing) {
+        // Only add if not already there
+        if (!existing.includes(item.marker)) {
+          data.days[dayIdx].lessons[h] = eventText + '\n' + existing;
+        }
+      } else {
+        data.days[dayIdx].lessons[h] = eventText;
+      }
+    }
+  }
+
+  return data;
+}
+
+
 async function fetchTimetable(classId, view) {
   const r1 = await fetchPage(BASE_URL);
   const f1 = extractFormFields(r1.body);
@@ -197,7 +246,7 @@ module.exports = async (req, res) => {
 
   const classId = req.query.classId || '1';
   const view = req.query.view || 'TimeTable';
-  const cacheKey = `${classId}_${view}`;
+  const cacheKey = `${classId}_${view}_merged`;
 
   if (cache[cacheKey] && Date.now() - cache[cacheKey].time < CACHE_TTL) {
     return res.json(cache[cacheKey].data);
@@ -206,6 +255,23 @@ module.exports = async (req, res) => {
   try {
     const html = await fetchTimetable(classId, view);
     const data = parseResponse(html, view);
+
+    // For grid views, also fetch exams and events to merge into the grid
+    if (view === 'TimeTable' || view === 'ChangesTable') {
+      try {
+        const [examsHtml, eventsHtml] = await Promise.all([
+          fetchTimetable(classId, 'Exams'),
+          fetchTimetable(classId, 'Events')
+        ]);
+        const examsItems = parseMsgCells(examsHtml);
+        const eventsItems = parseEvents(eventsHtml);
+        mergeIntoGrid(data, examsItems, eventsItems);
+      } catch (mergeErr) {
+        // Don't fail the whole request if merge fails
+        console.error('Merge error:', mergeErr.message);
+      }
+    }
+
     cache[cacheKey] = { data, time: Date.now() };
     res.json(data);
   } catch (err) {
