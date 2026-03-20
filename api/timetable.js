@@ -156,9 +156,16 @@ function parseEvents(html) {
     const date = dateMatch?dateMatch[1]:'';
     let rest = dateMatch?text.substring(date.length).replace(/^,\s*/,''):text;
     let hourRange = '';
+    // Try range format first: "משיעור 7 עד שיעור 10"
     const hrm = rest.match(/משיעור\s*(\d+)\s*עד\s*שיעור\s*(\d+)/);
-    if (hrm) hourRange = `${hrm[1]}-${hrm[2]}`;
-    let eventName = rest.split(/משיעור|לכיתות/)[0].trim();
+    if (hrm) {
+      hourRange = `${hrm[1]}-${hrm[2]}`;
+    } else {
+      // Try single hour: "שיעור 5"
+      const shm = rest.match(/שיעור\s*(\d+)/);
+      if (shm) hourRange = shm[1];
+    }
+    let eventName = rest.split(/משיעור|שיעור\s*\d|לכיתות/)[0].trim();
     let classes = '';
     const cm = rest.match(/לכיתות:\s*(.*)/);
     if (cm) classes = cm[1].trim();
