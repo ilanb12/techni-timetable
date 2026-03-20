@@ -133,8 +133,8 @@ document.getElementById('mClassSelect').onchange=()=>{document.getElementById('d
 document.getElementById('dClassSelect').onchange=()=>{document.getElementById('mClassSelect').value=document.getElementById('dClassSelect').value;loadData()};
 
 function parseSL(l){let s=l,r='',d=0,re=-1,rs=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(re===-1)re=i;d++}else if(l[i]==='('){d--;if(d===0){rs=i;break}}}if(rs>0&&re>rs){r=l.substring(rs+1,re);s=l.substring(0,rs).trim()}return{subject:s,room:r}}
-function parseT(l){let d=0,e=-1,s=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(e===-1)e=i;d++}else if(l[i]==='('){d--;if(d===0){s=i;break}}}return s>0&&e>s?l.substring(0,s).trim():l.trim()}
-function isSub(l){if(l.includes('('))return true;return['מתמטיקה','אנגלית','עברית','היסטוריה','תנ"ך','חשמל','פיזיקה','כימיה','ספרות','חינוך','מדעי','תכנות','לוגיקה','רובוטיקה','אוריינות','מבוא','תעופה','מכטרוניקה','ארוחת','מסדר','גופני','הכחלה','אזרחות','ביולוגיה','תקשוב','הנדסה','השכלה'].some(w=>l.includes(w))}
+function parseT(l){let d=0,e=-1,s=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(e===-1)e=i;d++}else if(l[i]==='('){d--;if(d===0){s=i;break}}}if(s>0&&e>s){const inside=l.substring(s+1,e);if(/\d/.test(inside))return l.substring(0,s).trim()}return l.trim()}
+function isSub(l){const pm=l.match(/\(([^)]*)\)/);if(pm&&/\d|מעבדת|חדר אוכל|אולם|מגרש|ספריה/.test(pm[1]))return true;if(pm&&!/\d/.test(pm[1]))return false;return['מתמטיקה','אנגלית','עברית','היסטוריה','תנ"ך','חשמל','פיזיקה','כימיה','ספרות','חינוך','מדעי','תכנות','לוגיקה','רובוטיקה','אוריינות','מבוא','תעופה','מכטרוניקה','ארוחת','מסדר','גופני','הכחלה','אזרחות','ביולוגיה','תקשוב','הנדסה','השכלה'].some(w=>l.includes(w))}
 
 function parseLessons(text){
   if(!text||!text.trim())return[];let ct=null;
