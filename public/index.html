@@ -208,8 +208,9 @@ const EMPTY_LABELS={Changes:'שינויים',Exams:'מבחנים',Messages:'הו
 let currentView='TimeTable',currentData=null,selectedDay=-1,weekOffset=0;
 
 [document.getElementById('mClassSelect'),document.getElementById('dClassSelect')].forEach(sel=>{CLASSES.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o)})});
-document.getElementById('mClassSelect').onchange=()=>{document.getElementById('dClassSelect').value=document.getElementById('mClassSelect').value;loadData()};
-document.getElementById('dClassSelect').onchange=()=>{document.getElementById('mClassSelect').value=document.getElementById('dClassSelect').value;loadData()};
+document.getElementById('mClassSelect').onchange=()=>{document.getElementById('dClassSelect').value=document.getElementById('mClassSelect').value;try{localStorage.setItem('selectedClass',document.getElementById('mClassSelect').value)}catch(e){}loadData()};
+document.getElementById('dClassSelect').onchange=()=>{document.getElementById('mClassSelect').value=document.getElementById('dClassSelect').value;try{localStorage.setItem('selectedClass',document.getElementById('dClassSelect').value)}catch(e){}loadData()};
+try{const saved=localStorage.getItem('selectedClass');if(saved){document.getElementById('mClassSelect').value=saved;document.getElementById('dClassSelect').value=saved}}catch(e){}
 
 function parseSL(l){let s=l,r='',d=0,re=-1,rs=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(re===-1)re=i;d++}else if(l[i]==='('){d--;if(d===0){rs=i;break}}}if(rs>0&&re>rs){r=l.substring(rs+1,re);s=l.substring(0,rs).trim()}return{subject:s,room:r}}
 function parseT(l){let d=0,e=-1,s=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(e===-1)e=i;d++}else if(l[i]==='('){d--;if(d===0){s=i;break}}}if(s>0&&e>s){const inside=l.substring(s+1,e);if(/\d/.test(inside))return l.substring(0,s).trim()}return l.trim()}
@@ -237,7 +238,7 @@ function parseLessons(text){
 }
 
 function lType(g){if(!g)return'empty';if(g.changeType==='cancelled')return'cancelled';if(g.changeType==='changed')return'changed';const s=g.subject;if(s.startsWith('📝'))return'exam';if(s.startsWith('📌'))return'event';if(s.includes('ארוחת צהרים'))return'break';if(s.includes('מסדר'))return'formation';if(s.includes('חינוך גופני'))return'pe';return'regular'}
-function typeIcon(t){return{break:'🍽️ ',formation:'🫡 ',pe:'🏃 ',cancelled:'❌ ',changed:'🔄 ',exam:'📝 ',event:'📌 '}[t]||''}
+function typeIcon(t){return{break:'🍽️ ',formation:'🫡 ',pe:'🏃 ',cancelled:'❌ ',changed:'🔄 '}[t]||''}
 function isCur(h){const now=new Date(),t=HT[h];if(!t)return false;const[sh,sm]=t.s.split(':').map(Number),[eh,em]=t.e.split(':').map(Number),c=now.getHours()*60+now.getMinutes();return c>=sh*60+sm&&c<=eh*60+em}
 
 // MOBILE
