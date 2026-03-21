@@ -122,25 +122,26 @@ function parseChangesTableView(html) {
           const subj = (parts[0] || 'ביטול').replace(/,\s*$/, '');
           const teacher = parts[1] || '';
           cellText = '❌ ' + subj + (teacher ? '\n' + teacher : '');
+          // Append remaining TTLesson divs (unchanged הקבצות)
+          if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else if (fillChange) {
-          // Format: "[substitute] <- [original teacher] [room]"
-          // TTLesson div has the subject
-          const raw = cleanHtml(fillChange[1]).replace(/←/g, '<-');
-          let substitute = '', original = '';
+          // Format: "[substitute] <- [original] [room]"
+          const raw = fillChange[1].replace(/&nbsp;/g,' ').replace(/<[^>]+>/g,'').replace(/&#39;/g,"'").replace(/←/g,'<-').trim();
+          let substitute = '';
           if (raw.includes('<-')) {
-            const sides = raw.split('<-').map(s => s.trim());
-            substitute = sides[0] || '';
-            original = sides[1] || '';
+            substitute = raw.split('<-')[0].trim();
           } else {
-            // Fallback: simple "teacher, subject" format
-            const parts = raw.split(',').map(s => s.trim());
-            substitute = parts[0] || '';
-            original = parts.slice(1).join(', ').trim();
+            substitute = raw.split(',')[0].trim();
           }
-          // Get subject from TTLesson if available
+          // Get subject + room from first TTLesson
           const lessonSubj = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
-          const subj = lessonSubj ? cleanHtml(lessonSubj[1]) : original || substitute;
-          cellText = '🔄 ' + subj + (substitute ? '\nמחליף: ' + substitute : '');
+          const subj = lessonSubj ? cleanHtml(lessonSubj[1]) : '';
+          // Get room from TTLesson
+          const roomMatch = cellContent.match(/<b>[\s\S]*?<\/b>[^(]*(\([^)]*\))/i);
+          const room = roomMatch ? cleanHtml(roomMatch[1]) : '';
+          cellText = '🔄 ' + (subj || substitute);
+          if (substitute) cellText += '\n' + substitute;
+          if (room) cellText += '\n' + room;
         } else cellText = lessonTexts.join('\n');
         data.days[d].lessons.push(cellText);
       } else data.days[d].lessons.push('');
