@@ -234,7 +234,7 @@ function mergeIntoGrid(data, examsItems, eventsItems) {
 }
 
 
-async function fetchTimetable(classId, view) {
+async function fetchTimetable(classId, view, weekOffset = 0) {
   const r1 = await fetchPage(BASE_URL);
   const f1 = extractFormFields(r1.body);
   const pd1 = buildPostData(f1, { '__EVENTTARGET':'TimeTableView1$ClassesList', '__EVENTARGUMENT':'', 'TimeTableView1$ClassesList':classId });
@@ -242,7 +242,19 @@ async function fetchTimetable(classId, view) {
   const f2 = extractFormFields(r2.body);
   const viewTargets = { TimeTable:'TimeTableView1$btnTimeTable', ChangesTable:'TimeTableView1$btnChangesTable', Changes:'TimeTableView1$btnChanges', Exams:'TimeTableView1$btnExams', Messages:'TimeTableView1$btnMessages', Events:'TimeTableView1$btnEvents' };
   const pd2 = buildPostData(f2, { '__EVENTTARGET':viewTargets[view]||viewTargets.TimeTable, '__EVENTARGUMENT':'', 'TimeTableView1$ClassesList':classId });
-  const r3 = await fetchPage(BASE_URL, pd2, r2.cookies||r1.cookies);
+  let r3 = await fetchPage(BASE_URL, pd2, r2.cookies||r1.cookies);
+  let cookies = r3.cookies || r2.cookies || r1.cookies;
+
+  // Navigate weeks if offset != 0
+  const steps = Math.abs(weekOffset);
+  const target = weekOffset > 0 ? 'TimeTableView1$MainControl$LinkButton1' : 'TimeTableView1$MainControl$prevweek';
+  for (let i = 0; i < steps; i++) {
+    const fi = extractFormFields(r3.body);
+    const pdi = buildPostData(fi, { '__EVENTTARGET': target, '__EVENTARGUMENT': '', 'TimeTableView1$ClassesList': classId });
+    r3 = await fetchPage(BASE_URL, pdi, cookies);
+    cookies = r3.cookies || cookies;
+  }
+
   return r3.body;
 }
 
@@ -253,22 +265,24 @@ module.exports = async (req, res) => {
 
   const classId = req.query.classId || '1';
   const view = req.query.view || 'TimeTable';
-  const cacheKey = `${classId}_${view}_merged`;
+  const week = parseInt(req.query.week) || 0;
+  const cacheKey = `${classId}_${view}_w${week}_merged`;
 
   if (cache[cacheKey] && Date.now() - cache[cacheKey].time < CACHE_TTL) {
     return res.json(cache[cacheKey].data);
   }
 
   try {
-    const html = await fetchTimetable(classId, view);
+    const html = await fetchTimetable(classId, view, week);
     const data = parseResponse(html, view);
+    data.week = week;
 
     // For grid views, also fetch exams and events to merge into the grid
     if (view === 'TimeTable' || view === 'ChangesTable') {
       try {
         const [examsHtml, eventsHtml] = await Promise.all([
-          fetchTimetable(classId, 'Exams'),
-          fetchTimetable(classId, 'Events')
+          fetchTimetable(classId, 'Exams', week),
+          fetchTimetable(classId, 'Events', week)
         ]);
         const examsItems = parseMsgCells(examsHtml);
         const eventsItems = parseEvents(eventsHtml);

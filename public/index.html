@@ -126,6 +126,17 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 .tt td.today-col{background:rgba(59,130,246,.03)}
 .tt .subj{font-size:12px;font-weight:600;color:var(--text-bright);line-height:1.3}.tt .tchr{font-size:10px;color:var(--text-dim)}.tt .room{font-size:9px;color:var(--blue-light)}.tt .gsep{border-top:1px dashed rgba(255,255,255,.08);margin:3px 0}
 
+/* WEEK NAV */
+.week-nav{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.week-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--surface-2);color:var(--text-dim);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.week-btn:hover{color:var(--blue-light);border-color:var(--blue)}
+.week-btn:active{transform:scale(.95)}
+.week-label{font-size:13px;font-weight:600;color:var(--text-bright);min-width:80px;text-align:center}
+.week-today{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-dim);font-family:'Heebo';cursor:pointer}
+.week-today:hover{color:var(--blue-light);border-color:var(--blue)}
+.week-today.hidden{display:none}
+.d-week-nav{display:flex;align-items:center;gap:12px}
+
 @media(max-width:768px){.mobile-app{display:flex}.desktop-app{display:none!important}}
 @media(min-width:769px){.mobile-app{display:none!important}.desktop-app{display:block}}
 </style>
@@ -158,6 +169,12 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
   <div class="m-class-bar"><select class="m-class-select" id="mClassSelect"></select></div>
   <div class="m-day-tabs" id="mDayTabs"></div>
+  <div class="week-nav" id="mWeekNav">
+    <button class="week-btn" onclick="changeWeek(1)" title="שבוע קודם">→</button>
+    <button class="week-today hidden" id="mWeekToday" onclick="changeWeek(-weekOffset)">השבוע</button>
+    <span class="week-label" id="mWeekLabel">השבוע</span>
+    <button class="week-btn" onclick="changeWeek(-1)" title="שבוע הבא">←</button>
+  </div>
   <div class="m-content" id="mContent"><div class="m-loading"><div class="m-spinner"></div><div style="color:var(--text-dim);font-size:13px">טוען...</div></div></div>
   <nav class="m-nav">
     <button class="m-nav-item active" data-view="TimeTable" onclick="switchView('TimeTable')"><span class="nav-icon">📅</span>מערכת</button>
@@ -174,7 +191,8 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="d-header-right"><div class="d-logo">חא</div><div class="d-title"><h1>המכללה הטכנולוגית של חיל האוויר</h1><div class="sub">מערכת שעות — באר שבע</div></div></div>
     <div class="d-header-left"><div class="d-badge"><span class="dot"></span><span id="dUpdateTime">טוען...</span></div><button class="help-btn" onclick="openHelp()" style="width:36px;height:36px;font-size:16px">?</button></div>
   </div>
-  <div class="d-controls"><select class="d-select" id="dClassSelect"></select><div class="d-tabs"><button class="d-tab active" data-view="TimeTable" onclick="switchView('TimeTable')">מערכת שעות</button><button class="d-tab" data-view="ChangesTable" onclick="switchView('ChangesTable')">מערכת ושינויים</button><button class="d-tab" data-view="Changes" onclick="switchView('Changes')">שינויים</button><button class="d-tab" data-view="Exams" onclick="switchView('Exams')">מבחנים</button><button class="d-tab" data-view="Messages" onclick="switchView('Messages')">הודעות כלליות</button><button class="d-tab" data-view="Events" onclick="switchView('Events')">אירועים</button></div></div>
+  <div class="d-controls"><select class="d-select" id="dClassSelect"></select><div class="d-tabs"><button class="d-tab active" data-view="TimeTable" onclick="switchView('TimeTable')">מערכת שעות</button><button class="d-tab" data-view="ChangesTable" onclick="switchView('ChangesTable')">מערכת ושינויים</button><button class="d-tab" data-view="Changes" onclick="switchView('Changes')">שינויים</button><button class="d-tab" data-view="Exams" onclick="switchView('Exams')">מבחנים</button><button class="d-tab" data-view="Messages" onclick="switchView('Messages')">הודעות כלליות</button><button class="d-tab" data-view="Events" onclick="switchView('Events')">אירועים</button></div>
+  <div class="d-week-nav"><button class="week-btn" onclick="changeWeek(1)" title="שבוע קודם">→</button><button class="week-today hidden" id="dWeekToday" onclick="changeWeek(-weekOffset)">השבוע</button><span class="week-label" id="dWeekLabel">השבוע</span><button class="week-btn" onclick="changeWeek(-1)" title="שבוע הבא">←</button></div></div>
   <div class="d-container" id="dContent"></div>
 </div>
 
@@ -187,7 +205,7 @@ const CLASSES=[{id:"1",name:"ט - 1"},{id:"2",name:"ט - 2"},{id:"3",name:"ט - 
 const HT=[{s:"08:00",e:"08:15"},{s:"08:15",e:"09:00"},{s:"09:00",e:"09:45"},{s:"09:55",e:"10:45"},{s:"11:00",e:"11:45"},{s:"11:55",e:"12:40"},{s:"12:50",e:"13:35"},{s:"13:45",e:"14:25"},{s:"14:40",e:"15:20"},{s:"15:30",e:"16:10"},{s:"16:20",e:"17:00"},{s:"17:05",e:"17:45"}];
 const GRID_VIEWS=['TimeTable','ChangesTable'];
 const EMPTY_LABELS={Changes:'שינויים',Exams:'מבחנים',Messages:'הודעות',Events:'אירועים'};
-let currentView='TimeTable',currentData=null,selectedDay=-1;
+let currentView='TimeTable',currentData=null,selectedDay=-1,weekOffset=0;
 
 [document.getElementById('mClassSelect'),document.getElementById('dClassSelect')].forEach(sel=>{CLASSES.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o)})});
 document.getElementById('mClassSelect').onchange=()=>{document.getElementById('dClassSelect').value=document.getElementById('mClassSelect').value;loadData()};
@@ -253,11 +271,23 @@ const s={Changes:'',Exams:'exam',Events:'event',Messages:'message'}[vt]||'';let 
 items.forEach(i=>{html+='<div class="m-change-card '+s+'"><div class="m-change-hour">'+(i.hour||'—')+'</div><div style="flex:1"><div class="m-change-type">'+(i.type||'')+'</div>'+(i.teacher?'<div class="m-change-teacher">'+i.teacher+'</div>':'')+'<div class="m-change-date">'+(i.date||'')+'</div></div></div>'});
 html+='</div>';el.innerHTML=html}
 
-function switchView(v){currentView=v;document.querySelectorAll('.d-tab,.m-nav-item').forEach(t=>t.classList.toggle('active',t.dataset.view===v));document.getElementById('mDayTabs').style.display=GRID_VIEWS.includes(v)?'flex':'none';loadData()}
+function changeWeek(delta){weekOffset+=delta;selectedDay=-1;updateWeekLabels();loadData()}
+function updateWeekLabels(){
+  const label=weekOffset===0?'השבוע':weekOffset>0?'לפני '+weekOffset+' שבועות':Math.abs(weekOffset)+' שבועות קדימה';
+  if(weekOffset===1)document.getElementById('mWeekLabel').textContent='שבוע שעבר';
+  else if(weekOffset===-1)document.getElementById('mWeekLabel').textContent='שבוע הבא';
+  else document.getElementById('mWeekLabel').textContent=label;
+  document.getElementById('dWeekLabel').textContent=document.getElementById('mWeekLabel').textContent;
+  const show=weekOffset!==0;
+  document.getElementById('mWeekToday').classList.toggle('hidden',!show);
+  document.getElementById('dWeekToday').classList.toggle('hidden',!show);
+}
+
+function switchView(v){currentView=v;document.querySelectorAll('.d-tab,.m-nav-item').forEach(t=>t.classList.toggle('active',t.dataset.view===v));document.getElementById('mDayTabs').style.display=GRID_VIEWS.includes(v)?'flex':'none';document.getElementById('mWeekNav').style.display=GRID_VIEWS.includes(v)?'flex':'none';loadData()}
 
 async function loadData(){const mC=document.getElementById('mContent'),dC=document.getElementById('dContent');const ld='<div class="m-loading"><div class="m-spinner"></div><div style="color:var(--text-dim);font-size:13px">טוען...</div></div>';mC.innerHTML=ld;dC.innerHTML=ld;
 const cls=document.getElementById('mClassSelect').value||document.getElementById('dClassSelect').value;
-try{const r=await fetch('/api/timetable?classId='+cls+'&view='+currentView);const data=await r.json();if(data.error)throw new Error(data.error);currentData=data;
+try{const r=await fetch('/api/timetable?classId='+cls+'&view='+currentView+'&week='+weekOffset);const data=await r.json();if(data.error)throw new Error(data.error);currentData=data;
 const ts=data.updateTime?'עודכן: '+data.updateTime:'עודכן: '+new Date().toLocaleTimeString('he-IL');document.getElementById('mUpdateTime').textContent=ts;document.getElementById('dUpdateTime').textContent=ts;
 if(GRID_VIEWS.includes(currentView)){renderMDayTabs(data);renderMDay();renderDTable(data)}else{document.getElementById('mDayTabs').style.display='none';renderMList(data.changes,currentView);renderDList(data.changes,currentView)}
 }catch(e){console.error(e);const err='<div style="text-align:center;padding:40px;color:var(--text-dim)">⚠️ '+e.message+'<br><button onclick="loadData()" style="margin-top:12px;padding:8px 20px;background:var(--blue);color:white;border:none;border-radius:8px;font-family:Heebo;cursor:pointer">נסה שוב</button></div>';mC.innerHTML=err;dC.innerHTML=err}}
