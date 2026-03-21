@@ -149,6 +149,8 @@ function parseChangesTableView(html) {
 
           cellText = '🔄 ' + (subj || substitute);
           if (substitute) cellText += '\nמחליף: ' + substitute;
+          // Append remaining TTLesson divs (other הקבצות that didn't change)
+          if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else cellText = lessonTexts.join('\n');
         data.days[d].lessons.push(cellText.trim());
       } else data.days[d].lessons.push('');
