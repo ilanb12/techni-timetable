@@ -297,7 +297,7 @@ document.getElementById('mClassSelect').onchange=()=>{document.getElementById('d
 document.getElementById('dClassSelect').onchange=()=>{document.getElementById('mClassSelect').value=document.getElementById('dClassSelect').value;try{localStorage.setItem('selectedClass',document.getElementById('dClassSelect').value)}catch(e){}loadData()};
 try{const saved=localStorage.getItem('selectedClass');if(saved){document.getElementById('mClassSelect').value=saved;document.getElementById('dClassSelect').value=saved}}catch(e){}
 
-function parseSL(l){let s=l,r='',d=0,re=-1,rs=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(re===-1)re=i;d++}else if(l[i]==='('){d--;if(d===0){rs=i;break}}}if(rs>0&&re>rs){r=l.substring(rs+1,re);s=l.substring(0,rs).trim()}return{subject:s,room:r}}
+function parseSL(l){let s=l,r='',d=0,re=-1,rs=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(re===-1)re=i;d++}else if(l[i]==='('){d--;if(d===0){rs=i;break}}}if(rs>0&&re>rs){const inside=l.substring(rs+1,re);if(/\d|מעבדת|חדר|אולם|מגרש|ספריה|הקבצה|מקוון/.test(inside)){r=inside;s=l.substring(0,rs).trim()}}return{subject:s,room:r}}
 function parseT(l){let d=0,e=-1,s=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(e===-1)e=i;d++}else if(l[i]==='('){d--;if(d===0){s=i;break}}}if(s>0&&e>s){const inside=l.substring(s+1,e);if(/\d/.test(inside))return l.substring(0,s).trim()}return l.trim()}
 
 function parseLessons(text){
@@ -309,33 +309,26 @@ function parseLessons(text){
   // Subject lines have parentheses with digits (room), or are the first of a pair
   // Strategy: walk lines in pairs. If a line has (digits) or is followed by a plain name, it's subject+teacher
   const g=[];let i=0;
+  function looksLikeTeacher(l){
+    if(!l||l.startsWith('['))return false;
+    if(l.split(/\s+/).length>5)return false;
+    // If has parens with digits → it's a subject with room, not a teacher
+    if(/\(\s*\d/.test(l))return false;
+    if(/\d{3}/.test(l))return false; // room numbers are 3+ digits
+    if(/מעבדת|חדר|אולם|מגרש|ספריה|הקבצה|מקוון/.test(l))return false;
+    return true;
+  }
   while(i<lines.length){
     const cur=lines[i];
     const next=i+1<lines.length?lines[i+1]:null;
     const p=parseSL(cur);
-    // If current line has room info (parentheses with digits), it's definitely a subject
-    // If next line exists and has NO room info and NO digits, it's likely a teacher
-    if(next && !next.includes('(') && !/\d/.test(next) && !next.startsWith('[') && next.split(/\s+/).length<=4){
+    if(next && looksLikeTeacher(next)){
       g.push({subject:p.subject,teacher:next,room:p.room,changeType:null});
       i+=2;
-    } else if(next && /\(/.test(next) && /\d/.test(next)){
-      // Next line also has room info → it's another subject (no teacher for current)
+    } else if(!next){
       g.push({subject:p.subject,teacher:'',room:p.room,changeType:null});
       i++;
-    } else if(!next){
-      // Last line — could be subject or teacher
-      // If it has room info or looks like a subject, treat as subject
-      if(p.room || /\d/.test(cur)){
-        g.push({subject:p.subject,teacher:'',room:p.room,changeType:null});
-      } else if(g.length>0 && !cur.includes('(') && cur.split(/\s+/).length<=3){
-        // Short plain text after subjects — likely a standalone teacher, treat as subject
-        g.push({subject:cur,teacher:'',room:'',changeType:null});
-      } else {
-        g.push({subject:p.subject,teacher:'',room:p.room,changeType:null});
-      }
-      i++;
     } else {
-      // Default: treat current as subject, move on
       g.push({subject:p.subject,teacher:'',room:p.room,changeType:null});
       i++;
     }
