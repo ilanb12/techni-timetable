@@ -10,7 +10,10 @@
 <link rel="manifest" href="/manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a0e1a;--surface:#111827;--surface-2:#1a2235;--surface-3:#232d42;--accent:#3b82f6;--accent-light:#60a5fa;--accent-glow:rgba(59,130,246,.15);--text:#e2e8f0;--text-dim:#94a3b8;--text-bright:#f8fafc;--border:rgba(255,255,255,.06);--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#8b5cf6}
+:root{--bg:#0a0e1a;--surface:#111827;--surface-2:#1a2235;--surface-3:#232d42;
+--blue:#3b82f6;--blue-light:#60a5fa;--blue-glow:rgba(59,130,246,.15);
+--orange:#f59e0b;--yellow:#eab308;--red:#ef4444;--purple:#8b5cf6;--green:#22c55e;--pink:#ec4899;
+--text:#e2e8f0;--text-dim:#94a3b8;--text-bright:#f8fafc;--border:rgba(255,255,255,.06)}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 
@@ -18,19 +21,24 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 .mobile-app{display:none;flex-direction:column;height:100vh;height:100dvh}
 .m-header{padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .m-header-right{display:flex;align-items:center;gap:10px}
-.m-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:white}
+.m-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:white}
 .m-school{font-size:15px;font-weight:700;color:var(--text-bright)}
+.m-header-left{display:flex;align-items:center;gap:8px}
 .m-badge{font-size:10px;color:var(--text-dim);background:var(--surface-2);padding:4px 8px;border-radius:6px}
+.help-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--surface-2);color:var(--text-dim);font-family:'Heebo';font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.help-btn:hover{color:var(--blue-light);border-color:var(--blue)}
 .m-class-bar{padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
 .m-class-select{width:100%;appearance:none;background:var(--surface-2);border:1px solid var(--border);color:var(--text-bright);padding:10px 16px;border-radius:10px;font-family:'Heebo';font-size:15px;font-weight:600;text-align:center;outline:none}
 .m-day-tabs{display:flex;padding:8px 12px;gap:4px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;scrollbar-width:none}
 .m-day-tabs::-webkit-scrollbar{display:none}
 .m-day-tab{flex-shrink:0;padding:8px 14px;border-radius:10px;border:none;background:transparent;color:var(--text-dim);font-family:'Heebo';font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;min-width:60px}
-.m-day-tab.active{background:var(--accent);color:white;box-shadow:0 2px 10px rgba(59,130,246,.3)}
+.m-day-tab.active{background:var(--blue);color:white;box-shadow:0 2px 10px rgba(59,130,246,.3)}
 .m-day-tab .day-name{display:block;font-weight:600;font-size:13px}
 .m-day-tab .day-date{display:block;font-size:10px;opacity:.7;margin-top:1px}
 .m-content{flex:1;overflow-y:auto;padding:12px 16px 80px;-webkit-overflow-scrolling:touch}
-.m-lesson-card{background:var(--surface);border-radius:14px;padding:14px 16px;margin-bottom:10px;border-right:4px solid var(--accent);display:flex;gap:14px;align-items:flex-start;position:relative;animation:cardIn .3s ease both}
+
+/* Mobile cards — color coded */
+.m-lesson-card{background:var(--surface);border-radius:14px;padding:14px 16px;margin-bottom:10px;border-right:4px solid var(--blue);display:flex;gap:14px;align-items:flex-start;position:relative;animation:cardIn .3s ease both}
 @keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .m-lesson-card:nth-child(1){animation-delay:.02s}.m-lesson-card:nth-child(2){animation-delay:.04s}.m-lesson-card:nth-child(3){animation-delay:.06s}.m-lesson-card:nth-child(4){animation-delay:.08s}.m-lesson-card:nth-child(5){animation-delay:.1s}
 .m-hour-badge{min-width:48px;text-align:center;flex-shrink:0}
@@ -39,75 +47,115 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 .m-lesson-info{flex:1;min-width:0}
 .m-lesson-subject{font-size:15px;font-weight:700;color:var(--text-bright);line-height:1.3}
 .m-lesson-teacher{font-size:13px;color:var(--text-dim);margin-top:2px}
-.m-lesson-room{font-size:11px;color:var(--accent-light);margin-top:2px}
+.m-lesson-room{font-size:11px;color:var(--blue-light);margin-top:2px}
 .m-group-sep{border-top:1px dashed rgba(255,255,255,.08);margin:8px 0}
-.m-lesson-card.break{border-right-color:var(--amber);background:rgba(245,158,11,.05)}.m-lesson-card.break .m-lesson-subject{color:var(--amber)}
+
+/* Colors: blue=regular, orange=lunch, yellow=substitute, red=cancelled, purple=formation, green=event, pink=exam */
+.m-lesson-card.break{border-right-color:var(--orange);background:rgba(245,158,11,.05)}.m-lesson-card.break .m-lesson-subject{color:var(--orange)}
 .m-lesson-card.formation{border-right-color:var(--purple);background:rgba(139,92,246,.05)}.m-lesson-card.formation .m-lesson-subject{color:#a78bfa}
-.m-lesson-card.pe{border-right-color:var(--green);background:rgba(34,197,94,.05)}.m-lesson-card.pe .m-lesson-subject{color:#4ade80}
+.m-lesson-card.pe{border-right-color:var(--blue);background:rgba(59,130,246,.05)}
 .m-lesson-card.cancelled{border-right-color:var(--red);background:rgba(239,68,68,.05)}.m-lesson-card.cancelled .m-lesson-subject{color:var(--red);text-decoration:line-through}
-.m-lesson-card.changed{border-right-color:var(--amber);background:rgba(245,158,11,.05)}.m-lesson-card.changed .m-lesson-subject{color:var(--amber)}
-.m-lesson-card.exam{border-right-color:var(--amber);background:rgba(245,158,11,.08)}.m-lesson-card.exam .m-lesson-subject{color:var(--amber);font-weight:800}
-.m-lesson-card.event{border-right-color:var(--purple);background:rgba(139,92,246,.08)}.m-lesson-card.event .m-lesson-subject{color:#a78bfa;font-weight:800}
-.m-lesson-card.current{border-right-color:var(--green);border-right-width:5px;background:rgba(34,197,94,.08);box-shadow:0 0 20px rgba(34,197,94,.1)}
-.m-lesson-card.current .m-hour-num{color:var(--green)}
+.m-lesson-card.changed{border-right-color:var(--yellow);background:rgba(234,179,8,.05)}.m-lesson-card.changed .m-lesson-subject{color:var(--yellow)}
+.m-lesson-card.exam{border-right-color:var(--pink);background:rgba(236,72,153,.08)}.m-lesson-card.exam .m-lesson-subject{color:var(--pink);font-weight:800}
+.m-lesson-card.event{border-right-color:var(--green);background:rgba(34,197,94,.08)}.m-lesson-card.event .m-lesson-subject{color:var(--green);font-weight:800}
+.m-lesson-card.current{border-right-width:5px;background:rgba(59,130,246,.1);box-shadow:0 0 20px rgba(59,130,246,.1)}
+.m-lesson-card.current .m-hour-num{color:var(--blue-light)}
 .m-lesson-card.current::after{content:'עכשיו';position:absolute;top:8px;left:12px;font-size:9px;font-weight:700;color:var(--green);background:rgba(34,197,94,.15);padding:2px 6px;border-radius:4px}
 .m-empty{text-align:center;padding:40px 20px;color:var(--text-dim)}.m-empty-icon{font-size:40px;margin-bottom:8px}
 .m-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:6px 8px;padding-bottom:max(6px,env(safe-area-inset-bottom));z-index:10}
 .m-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:6px 2px;border-radius:8px;border:none;background:transparent;color:var(--text-dim);font-family:'Heebo';font-size:10px;cursor:pointer;gap:2px}
-.m-nav-item.active{color:var(--accent-light)}
+.m-nav-item.active{color:var(--blue-light)}
 .m-nav-item .nav-icon{font-size:18px}
 .m-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;gap:12px}
-.m-spinner{width:32px;height:32px;border:3px solid var(--surface-3);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.m-spinner{width:32px;height:32px;border:3px solid var(--surface-3);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .m-change-card{background:var(--surface);border-radius:14px;padding:14px 16px;margin-bottom:10px;border-right:4px solid var(--red);display:flex;gap:14px;align-items:center}
-.m-change-card.exam{border-right-color:var(--amber)}.m-change-card.event{border-right-color:var(--purple)}.m-change-card.message{border-right-color:var(--accent)}
-.m-change-hour{font-size:24px;font-weight:800;color:var(--accent-light);min-width:40px;text-align:center}
+.m-change-card.exam{border-right-color:var(--pink)}.m-change-card.event{border-right-color:var(--green)}.m-change-card.message{border-right-color:var(--blue)}
+.m-change-hour{font-size:24px;font-weight:800;color:var(--blue-light);min-width:40px;text-align:center}
 .m-change-type{font-size:12px;font-weight:600;color:var(--red)}
-.m-change-card.exam .m-change-type{color:var(--amber)}.m-change-card.event .m-change-type{color:#a78bfa}.m-change-card.message .m-change-type{color:var(--accent-light)}
+.m-change-card.exam .m-change-type{color:var(--pink)}.m-change-card.event .m-change-type{color:var(--green)}.m-change-card.message .m-change-type{color:var(--blue-light)}
 .m-change-teacher{font-size:14px;font-weight:500;color:var(--text-bright);margin-top:2px}
 .m-change-date{font-size:10px;color:var(--text-dim);margin-top:2px}
+
+/* HELP MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:18px;padding:24px;max-width:400px;width:100%;max-height:80vh;overflow-y:auto;border:1px solid var(--border)}
+.modal h2{font-size:18px;font-weight:700;color:var(--text-bright);margin-bottom:16px;text-align:center}
+.modal p{font-size:13px;color:var(--text-dim);margin-bottom:16px;line-height:1.6;text-align:center}
+.legend{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.legend-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)}
+.legend-color{width:24px;height:24px;border-radius:6px;flex-shrink:0}
+.modal-close{width:100%;padding:10px;background:var(--blue);color:white;border:none;border-radius:10px;font-family:'Heebo';font-size:14px;font-weight:600;cursor:pointer}
 
 /* DESKTOP */
 .desktop-app{display:none;max-width:1400px;margin:0 auto;padding:24px}
 .d-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border)}
 .d-header-right{display:flex;align-items:center;gap:16px}
-.d-logo{width:48px;height:48px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:white}
+.d-logo{width:48px;height:48px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:white}
 .d-title h1{font-size:22px;font-weight:700;color:var(--text-bright)}.d-title .sub{font-size:13px;color:var(--text-dim);margin-top:2px}
+.d-header-left{display:flex;align-items:center;gap:12px}
 .d-badge{font-size:12px;color:var(--text-dim);background:var(--surface-2);padding:6px 12px;border-radius:8px;display:flex;align-items:center;gap:6px}
 .d-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .d-controls{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
 .d-select{appearance:none;background:var(--surface-2);border:1px solid var(--border);color:var(--text-bright);padding:10px 40px 10px 16px;border-radius:10px;font-family:'Heebo';font-size:15px;font-weight:500;cursor:pointer;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px center}
 .d-tabs{display:flex;background:var(--surface);border-radius:10px;padding:3px;border:1px solid var(--border);gap:2px}
-.d-tab{padding:8px 14px;border-radius:8px;border:none;background:transparent;color:var(--text-dim);font-family:'Heebo';font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}.d-tab.active{background:var(--accent);color:white}
+.d-tab{padding:8px 14px;border-radius:8px;border:none;background:transparent;color:var(--text-dim);font-family:'Heebo';font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}.d-tab.active{background:var(--blue);color:white}
 .d-container{background:var(--surface);border-radius:16px;border:1px solid var(--border);overflow:auto;box-shadow:0 4px 24px rgba(0,0,0,.2)}
+
+/* Desktop table — color coded */
 .tt{width:100%;border-collapse:collapse}
 .tt thead th{background:var(--surface-2);padding:14px 10px;font-weight:600;font-size:14px;color:var(--text-bright);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2}
-.tt thead th.today{color:var(--accent-light);background:linear-gradient(180deg,rgba(59,130,246,.12),var(--surface-2))}.tt thead th.today::after{content:'היום';display:block;font-size:10px;font-weight:700;color:var(--accent);margin-top:2px}
+.tt thead th.today{color:var(--blue-light);background:linear-gradient(180deg,rgba(59,130,246,.12),var(--surface-2))}.tt thead th.today::after{content:'היום';display:block;font-size:10px;font-weight:700;color:var(--blue);margin-top:2px}
 .tt thead th:first-child{width:65px;text-align:center}
 .tt tbody td{padding:0;border:1px solid var(--border);vertical-align:top;min-height:64px}
 .tt tbody td:first-child{text-align:center;background:var(--surface-2);width:65px;vertical-align:middle;padding:6px 3px}
 .tt .h-num{font-size:17px;font-weight:700;color:var(--text-bright)}.tt .h-time{font-size:9px;color:var(--text-dim);margin-top:2px}
 .tt .cell{padding:6px 8px;display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden;min-height:60px}
 .tt .cell::before{content:'';position:absolute;top:0;right:0;width:3px;height:100%;border-radius:0 3px 3px 0}
-.tt .cell.has::before{background:var(--accent)}.tt .cell.break::before{background:var(--amber)}.tt .cell.break .subj{color:var(--amber)}
+.tt .cell.has::before{background:var(--blue)}
+.tt .cell.break::before{background:var(--orange)}.tt .cell.break .subj{color:var(--orange)}
 .tt .cell.formation::before{background:var(--purple)}.tt .cell.formation .subj{color:#a78bfa}
-.tt .cell.pe::before{background:var(--green)}.tt .cell.pe .subj{color:#4ade80}
+.tt .cell.pe::before{background:var(--blue)}
 .tt .cell.cancelled::before{background:var(--red)}.tt .cell.cancelled .subj{color:var(--red);text-decoration:line-through}
-.tt .cell.changed::before{background:var(--amber)}.tt .cell.changed .subj{color:var(--amber)}
-.tt .cell.exam::before{background:var(--amber)}.tt .cell.exam .subj{color:var(--amber);font-weight:700}
-.tt .cell.event::before{background:var(--purple)}.tt .cell.event .subj{color:#a78bfa;font-weight:700}
-.tt .cell.cur{background:var(--accent-glow)}.tt .cell.cur::before{background:var(--accent);width:4px}
+.tt .cell.changed::before{background:var(--yellow)}.tt .cell.changed .subj{color:var(--yellow)}
+.tt .cell.exam::before{background:var(--pink)}.tt .cell.exam .subj{color:var(--pink);font-weight:700}
+.tt .cell.event::before{background:var(--green)}.tt .cell.event .subj{color:var(--green);font-weight:700}
+.tt .cell.cur{background:var(--blue-glow)}.tt .cell.cur::before{background:var(--blue);width:4px}
 .tt td.today-col{background:rgba(59,130,246,.03)}
-.tt .subj{font-size:12px;font-weight:600;color:var(--text-bright);line-height:1.3}.tt .tchr{font-size:10px;color:var(--text-dim)}.tt .room{font-size:9px;color:var(--accent-light)}.tt .gsep{border-top:1px dashed rgba(255,255,255,.08);margin:3px 0}
+.tt .subj{font-size:12px;font-weight:600;color:var(--text-bright);line-height:1.3}.tt .tchr{font-size:10px;color:var(--text-dim)}.tt .room{font-size:9px;color:var(--blue-light)}.tt .gsep{border-top:1px dashed rgba(255,255,255,.08);margin:3px 0}
 
 @media(max-width:768px){.mobile-app{display:flex}.desktop-app{display:none!important}}
 @media(min-width:769px){.mobile-app{display:none!important}.desktop-app{display:block}}
 </style>
 </head>
 <body>
+<!-- HELP MODAL -->
+<div class="modal-overlay" id="helpModal" onclick="if(event.target===this)closeHelp()">
+  <div class="modal">
+    <h2>אודות מערכת השעות</h2>
+    <p>אפליקציה לצפייה במערכת השעות של המכללה הטכנולוגית של חיל האוויר, באר שבע.<br>הנתונים מתעדכנים אוטומטית מהמערכת הרשמית של שחף.</p>
+    <h2 style="font-size:15px;margin-bottom:12px">מקרא צבעים</h2>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-color" style="background:var(--blue)"></div>שיעור רגיל</div>
+      <div class="legend-item"><div class="legend-color" style="background:var(--orange)"></div>ארוחת צהריים</div>
+      <div class="legend-item"><div class="legend-color" style="background:var(--yellow)"></div>מילוי מקום</div>
+      <div class="legend-item"><div class="legend-color" style="background:var(--red)"></div>ביטול שיעור</div>
+      <div class="legend-item"><div class="legend-color" style="background:var(--purple)"></div>מסדר בוקר / יציאה</div>
+      <div class="legend-item"><div class="legend-color" style="background:var(--green)"></div>אירוע</div>
+      <div class="legend-item"><div class="legend-color" style="background:var(--pink)"></div>מבחן</div>
+    </div>
+    <button class="modal-close" onclick="closeHelp()">סגור</button>
+  </div>
+</div>
+
+<!-- MOBILE -->
 <div class="mobile-app" id="mobileApp">
-  <div class="m-header"><div class="m-header-right"><div class="m-logo">חא</div><div class="m-school">טכני חיל האוויר</div></div><div class="m-badge" id="mUpdateTime">טוען...</div></div>
+  <div class="m-header">
+    <div class="m-header-right"><div class="m-logo">חא</div><div class="m-school">טכני חיל האוויר</div></div>
+    <div class="m-header-left"><div class="m-badge" id="mUpdateTime">טוען...</div><button class="help-btn" onclick="openHelp()">?</button></div>
+  </div>
   <div class="m-class-bar"><select class="m-class-select" id="mClassSelect"></select></div>
   <div class="m-day-tabs" id="mDayTabs"></div>
   <div class="m-content" id="mContent"><div class="m-loading"><div class="m-spinner"></div><div style="color:var(--text-dim);font-size:13px">טוען...</div></div></div>
@@ -119,12 +167,21 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
     <button class="m-nav-item" data-view="Events" onclick="switchView('Events')"><span class="nav-icon">🎉</span>אירועים</button>
   </nav>
 </div>
+
+<!-- DESKTOP -->
 <div class="desktop-app" id="desktopApp">
-  <div class="d-header"><div class="d-header-right"><div class="d-logo">חא</div><div class="d-title"><h1>המכללה הטכנולוגית של חיל האוויר</h1><div class="sub">מערכת שעות — באר שבע</div></div></div><div class="d-badge"><span class="dot"></span><span id="dUpdateTime">טוען...</span></div></div>
+  <div class="d-header">
+    <div class="d-header-right"><div class="d-logo">חא</div><div class="d-title"><h1>המכללה הטכנולוגית של חיל האוויר</h1><div class="sub">מערכת שעות — באר שבע</div></div></div>
+    <div class="d-header-left"><div class="d-badge"><span class="dot"></span><span id="dUpdateTime">טוען...</span></div><button class="help-btn" onclick="openHelp()" style="width:36px;height:36px;font-size:16px">?</button></div>
+  </div>
   <div class="d-controls"><select class="d-select" id="dClassSelect"></select><div class="d-tabs"><button class="d-tab active" data-view="TimeTable" onclick="switchView('TimeTable')">מערכת שעות</button><button class="d-tab" data-view="ChangesTable" onclick="switchView('ChangesTable')">מערכת ושינויים</button><button class="d-tab" data-view="Changes" onclick="switchView('Changes')">שינויים</button><button class="d-tab" data-view="Exams" onclick="switchView('Exams')">מבחנים</button><button class="d-tab" data-view="Messages" onclick="switchView('Messages')">הודעות כלליות</button><button class="d-tab" data-view="Events" onclick="switchView('Events')">אירועים</button></div></div>
   <div class="d-container" id="dContent"></div>
 </div>
+
 <script>
+function openHelp(){document.getElementById('helpModal').classList.add('open')}
+function closeHelp(){document.getElementById('helpModal').classList.remove('open')}
+
 const MAX_HOURS=12;
 const CLASSES=[{id:"1",name:"ט - 1"},{id:"2",name:"ט - 2"},{id:"3",name:"ט - 3"},{id:"4",name:"ט - 4"},{id:"5",name:"ט - 5"},{id:"6",name:"ט - 6"},{id:"46",name:"ט - 7"},{id:"54",name:"ט - 8"},{id:"57",name:"י - 1 תוכנה"},{id:"11",name:"י - 2 אלק'"},{id:"13",name:"י - 3 חשמל"},{id:"14",name:"י - 4 חשמל"},{id:"15",name:"י - 5 חשמל"},{id:"16",name:"י - 6 מכטרוניקה"},{id:"47",name:"י - 7 תעופה"},{id:"48",name:"י - 8 תעופה"},{id:"19",name:"יא-1 תוכנה"},{id:"20",name:"יא - 2 אלק'"},{id:"21",name:"יא - 3 חשמל"},{id:"22",name:"יא - 4 חשמל"},{id:"23",name:"יא - 5 חשמל"},{id:"24",name:"יא - 6 מכטרוניקה"},{id:"50",name:"יא - 7 תעופה"},{id:"51",name:"יא - 8 תעופה"},{id:"59",name:"יב-1 תעופה"},{id:"30",name:"יב - 2 תעופה"},{id:"31",name:"יב - 3 תעופה"},{id:"32",name:"יב - 4 מכטרוניקה"},{id:"33",name:"יב - 5 חשמל"},{id:"34",name:"יב - 6 חשמל"},{id:"52",name:"יב - 7 אלק'"},{id:"53",name:"יב - 8 תוכנה"},{id:"39",name:"יג-1 אלק'"},{id:"40",name:"יג-2 חשמל"},{id:"41",name:"יג-3 תעופה"},{id:"55",name:"יג-3 מכטרוניקה"},{id:"43",name:"יד-1 אלק'"},{id:"44",name:"יד-2 חשמל"},{id:"45",name:"יד-3 תעופה"},{id:"56",name:"יד-3 מכטרוניקה"}];
 const HT=[{s:"08:00",e:"08:15"},{s:"08:15",e:"09:00"},{s:"09:00",e:"09:45"},{s:"09:55",e:"10:45"},{s:"11:00",e:"11:45"},{s:"11:55",e:"12:40"},{s:"12:50",e:"13:35"},{s:"13:45",e:"14:25"},{s:"14:40",e:"15:20"},{s:"15:30",e:"16:10"},{s:"16:20",e:"17:00"},{s:"17:05",e:"17:45"}];
@@ -138,19 +195,15 @@ document.getElementById('dClassSelect').onchange=()=>{document.getElementById('m
 
 function parseSL(l){let s=l,r='',d=0,re=-1,rs=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(re===-1)re=i;d++}else if(l[i]==='('){d--;if(d===0){rs=i;break}}}if(rs>0&&re>rs){r=l.substring(rs+1,re);s=l.substring(0,rs).trim()}return{subject:s,room:r}}
 function parseT(l){let d=0,e=-1,s=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(e===-1)e=i;d++}else if(l[i]==='('){d--;if(d===0){s=i;break}}}if(s>0&&e>s){const inside=l.substring(s+1,e);if(/\d/.test(inside))return l.substring(0,s).trim()}return l.trim()}
+
 function isTeacher(l){
-  // A teacher line is typically just a name: 2-3 Hebrew words, no parens with digits
-  // If line has parens with digits/room words → it's a subject
   const pm=l.match(/\(([^)]*)\)/);
   if(pm&&/\d|מעבדת|חדר|אולם|מגרש|ספריה|מקוון/.test(pm[1]))return false;
-  // If line has no parens and is short (1-4 words of Hebrew), likely a teacher
   const words=l.trim().split(/\s+/);
   if(words.length>=1&&words.length<=5&&!l.includes('(')&&!/\d/.test(l)){
-    // Check it's not a known subject-like word
     const subWords=['מתמטיקה','אנגלית','עברית','היסטוריה','תנ"ך','חשמל','פיזיקה','כימיה','ספרות','מדעי','תכנות','לוגיקה','רובוטיקה','אוריינות','מבוא','תעופה','מכטרוניקה','ארוחת','מסדר','גופני','הכחלה','אזרחות','ביולוגיה','תקשוב','הנדסה','השכלה','פרויקטים','בקרה','אלקטרוניקה','סדנה','אומנות','מוזיקה','טכנולוגיה','תעשייה','חינוך'];
     if(!subWords.some(w=>l.includes(w)))return true;
   }
-  // If line has parens without digits (like name parens), it's a teacher
   if(pm&&!/\d/.test(pm[1])&&!pm[1].includes("'"))return true;
   return false;
 }
@@ -160,26 +213,11 @@ function parseLessons(text){
   if(text.startsWith('❌')){ct='cancelled';text=text.substring(1).trim()}else if(text.startsWith('🔄')){ct='changed';text=text.substring(1).trim()}
   const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);if(!lines.length)return[];
   if(ct)return[{subject:lines.join(', '),teacher:'',room:'',changeType:ct}];
-  // Strategy: walk lines. If current line is NOT a teacher → it's a subject.
-  // The next line might be a teacher for that subject.
   const g=[];let i=0;
-  while(i<lines.length){
-    if(!isTeacher(lines[i])){
-      // This is a subject line
-      const p=parseSL(lines[i]);
-      let t='';
-      // Check if next line is a teacher
-      if(i+1<lines.length&&isTeacher(lines[i+1])){t=parseT(lines[i+1]);i+=2}
-      else i++;
-      g.push({subject:p.subject,teacher:t,room:p.room,changeType:null});
-    } else {
-      // Standalone teacher line without a preceding subject — treat as subject
-      g.push({subject:lines[i],teacher:'',room:'',changeType:null});
-      i++;
-    }
-  }
+  while(i<lines.length){if(!isTeacher(lines[i])){const p=parseSL(lines[i]);let t='';if(i+1<lines.length&&isTeacher(lines[i+1])){t=parseT(lines[i+1]);i+=2}else i++;g.push({subject:p.subject,teacher:t,room:p.room,changeType:null})}else{g.push({subject:lines[i],teacher:'',room:'',changeType:null});i++}}
   return g.length?g:[{subject:lines[0],teacher:'',room:'',changeType:null}];
 }
+
 function lType(g){if(!g)return'empty';if(g.changeType==='cancelled')return'cancelled';if(g.changeType==='changed')return'changed';const s=g.subject;if(s.startsWith('📝'))return'exam';if(s.startsWith('🎉'))return'event';if(s.includes('ארוחת צהרים'))return'break';if(s.includes('מסדר'))return'formation';if(s.includes('חינוך גופני'))return'pe';return'regular'}
 function isCur(h){const now=new Date(),t=HT[h];if(!t)return false;const[sh,sm]=t.s.split(':').map(Number),[eh,em]=t.e.split(':').map(Number),c=now.getHours()*60+now.getMinutes();return c>=sh*60+sm&&c<=eh*60+em}
 
@@ -222,7 +260,7 @@ const cls=document.getElementById('mClassSelect').value||document.getElementById
 try{const r=await fetch('/api/timetable?classId='+cls+'&view='+currentView);const data=await r.json();if(data.error)throw new Error(data.error);currentData=data;
 const ts=data.updateTime?'עודכן: '+data.updateTime:'עודכן: '+new Date().toLocaleTimeString('he-IL');document.getElementById('mUpdateTime').textContent=ts;document.getElementById('dUpdateTime').textContent=ts;
 if(GRID_VIEWS.includes(currentView)){renderMDayTabs(data);renderMDay();renderDTable(data)}else{document.getElementById('mDayTabs').style.display='none';renderMList(data.changes,currentView);renderDList(data.changes,currentView)}
-}catch(e){console.error(e);const err='<div style="text-align:center;padding:40px;color:var(--text-dim)">⚠️ '+e.message+'<br><button onclick="loadData()" style="margin-top:12px;padding:8px 20px;background:var(--accent);color:white;border:none;border-radius:8px;font-family:Heebo;cursor:pointer">נסה שוב</button></div>';mC.innerHTML=err;dC.innerHTML=err}}
+}catch(e){console.error(e);const err='<div style="text-align:center;padding:40px;color:var(--text-dim)">⚠️ '+e.message+'<br><button onclick="loadData()" style="margin-top:12px;padding:8px 20px;background:var(--blue);color:white;border:none;border-radius:8px;font-family:Heebo;cursor:pointer">נסה שוב</button></div>';mC.innerHTML=err;dC.innerHTML=err}}
 
 setInterval(loadData,5*60*1000);loadData();
 </script>
