@@ -218,6 +218,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 <div class="print-modal-overlay" id="printModal" onclick="if(event.target===this)closePrint()">
   <div class="print-modal">
     <h2>🖨️ הדפסת מערכת</h2>
+    <div style="font-size:13px;font-weight:600;color:var(--text-bright);margin-bottom:8px">בחר ימים</div>
     <div class="print-options">
       <div class="print-opt selected" onclick="selectPrintMode('week')"><input type="radio" name="pmode" checked><label>כל השבוע</label></div>
       <div class="print-opt" onclick="selectPrintMode('day')"><input type="radio" name="pmode"><label>יום בודד</label></div>
@@ -230,7 +231,14 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
       <span style="color:var(--text-dim);font-size:13px">מ:</span><select id="printFrom"></select>
       <span style="color:var(--text-dim);font-size:13px">עד:</span><select id="printTo"></select>
     </div>
-    <div class="print-btns">
+    <div id="hakbatzaSection" style="display:none;margin-top:12px">
+      <div style="font-size:13px;font-weight:600;color:var(--text-bright);margin-bottom:8px">שיעורי הקבצות</div>
+      <select id="hakbatzaSelect" style="width:100%;appearance:none;background:var(--surface-2);border:1px solid var(--border);color:var(--text-bright);padding:10px 16px;border-radius:10px;font-family:Heebo;font-size:13px;outline:none">
+        <option value="all">הדפס את כל ההקבצות</option>
+      </select>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px">בחירת הקבצה בודדת מקטינה את הטבלה ומאפשרת הדפסה בעמוד אחד</div>
+    </div>
+    <div class="print-btns" style="margin-top:16px">
       <button class="print-cancel" onclick="closePrint()">ביטול</button>
       <button class="print-go" onclick="doPrint()">הדפס</button>
     </div>
@@ -393,6 +401,34 @@ function openPrint(){
     days.forEach((d,i)=>{const o=document.createElement('option');o.value=i;o.textContent=d.name+' '+d.date;sel.appendChild(o)});
   });
   if(document.getElementById('printTo').options.length)document.getElementById('printTo').value=days.length-1;
+  
+  // Scan for hakbatzot — find all unique subject names that appear as multiple groups in a cell
+  const hakbatzot=new Set();
+  let hasHakbatzot=false;
+  days.forEach(d=>{
+    for(let h=0;h<d.lessons.length;h++){
+      const groups=parseLessons(d.lessons[h]||'');
+      if(groups.length>1){
+        hasHakbatzot=true;
+        groups.forEach(g=>{
+          // Use subject+room as unique key for the hakbatza
+          const key=g.subject+(g.room?' ('+g.room+')':'');
+          hakbatzot.add(key);
+        });
+      }
+    }
+  });
+  
+  const hSel=document.getElementById('hakbatzaSelect');
+  hSel.innerHTML='<option value="all">הדפס את כל ההקבצות ('+hakbatzot.size+')</option>';
+  if(hasHakbatzot){
+    // Sort and add unique hakbatzot
+    [...hakbatzot].sort().forEach(h=>{
+      const o=document.createElement('option');o.value=h;o.textContent=h;hSel.appendChild(o);
+    });
+  }
+  document.getElementById('hakbatzaSection').style.display=hasHakbatzot?'block':'none';
+  
   selectPrintMode('week');
   document.getElementById('printModal').classList.add('open');
 }
@@ -411,6 +447,8 @@ function doPrint(){
   else if(printMode==='day'){const i=parseInt(document.getElementById('printDay1').value);selectedDays=[days[i]];}
   else{const f=parseInt(document.getElementById('printFrom').value),t=parseInt(document.getElementById('printTo').value);const mn=Math.min(f,t),mx=Math.max(f,t);selectedDays=days.slice(mn,mx+1);}
   if(!selectedDays.length)return;
+  
+  const hakbatzaFilter=document.getElementById('hakbatzaSelect').value;
   const hours=Math.min(currentData.hours,MAX_HOURS);
   const cls=document.getElementById('dClassSelect');
   const className=cls.options[cls.selectedIndex].text;
@@ -418,20 +456,31 @@ function doPrint(){
   const weekLabel=document.getElementById('dWeekLabel').textContent;
 
   let html='<h2>'+className+' — '+viewName+'</h2>';
-  html+='<div class="print-sub">'+weekLabel+(weekLabel==='השבוע'?'':' | ')+'הודפס: '+new Date().toLocaleDateString('he-IL')+'</div>';
+  html+='<div class="print-sub">'+weekLabel+(weekLabel==='השבוע'?'':' | ')+'הודפס: '+new Date().toLocaleDateString('he-IL');
+  if(hakbatzaFilter!=='all')html+=' | הקבצה: '+hakbatzaFilter;
+  html+='</div>';
   html+='<table><thead><tr><th>שעה</th>';
   selectedDays.forEach(d=>{html+='<th>'+d.name+'<br>'+d.date+'</th>'});
   html+='</tr></thead><tbody>';
   for(let h=0;h<hours;h++){
     const t=HT[h]||{s:'',e:''};
-    // Check if any day has content in this hour
     let hasContent=false;
     selectedDays.forEach(d=>{if(h<d.lessons.length&&d.lessons[h])hasContent=true});
     if(!hasContent)continue;
     html+='<tr><td>'+h+'<br><span style="font-size:8px">'+t.s+'-'+t.e+'</span></td>';
     selectedDays.forEach(d=>{
       const lt=h<d.lessons.length?d.lessons[h]:'';
-      const groups=parseLessons(lt);
+      let groups=parseLessons(lt);
+      
+      // Filter by hakbatza if selected
+      if(hakbatzaFilter!=='all'&&groups.length>1){
+        groups=groups.filter(g=>{
+          const key=g.subject+(g.room?' ('+g.room+')':'');
+          return key===hakbatzaFilter;
+        });
+        if(!groups.length)groups=parseLessons(lt).slice(0,1); // fallback to first
+      }
+      
       if(!groups.length){html+='<td></td>';return}
       const type=lType(groups[0]);
       html+='<td>';
