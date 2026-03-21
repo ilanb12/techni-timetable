@@ -232,11 +232,9 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
       <span style="color:var(--text-dim);font-size:13px">עד:</span><select id="printTo"></select>
     </div>
     <div id="hakbatzaSection" style="display:none;margin-top:12px">
-      <div style="font-size:13px;font-weight:600;color:var(--text-bright);margin-bottom:8px">שיעורי הקבצות</div>
-      <select id="hakbatzaSelect" style="width:100%;appearance:none;background:var(--surface-2);border:1px solid var(--border);color:var(--text-bright);padding:10px 16px;border-radius:10px;font-family:Heebo;font-size:13px;outline:none">
-        <option value="all">הדפס את כל ההקבצות</option>
-      </select>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:4px">בחירת הקבצה בודדת מקטינה את הטבלה ומאפשרת הדפסה בעמוד אחד</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text-bright);margin-bottom:8px">בחר הקבצות</div>
+      <div id="hakbatzaList" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto"></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px">בחירת הקבצות מקטינה את הטבלה לעמוד אחד</div>
     </div>
     <div class="print-btns" style="margin-top:16px">
       <button class="print-cancel" onclick="closePrint()">ביטול</button>
@@ -393,6 +391,11 @@ if(GRID_VIEWS.includes(currentView)){renderMDayTabs(data);renderMDay();renderDTa
 
 // PRINT
 let printMode='week';
+function getBaseSubject(s){
+  // Extract base subject: "מתמטיקה א'1" -> "מתמטיקה", "אנגלית ב'" -> "אנגלית"
+  return s.replace(/\s*[א-ת]'?\d?\s*$/, '').replace(/\s*\d.*$/, '').trim();
+}
+
 function openPrint(){
   if(!currentData||!currentData.days)return;
   const days=currentData.days.filter(d=>d.name);
@@ -402,29 +405,46 @@ function openPrint(){
   });
   if(document.getElementById('printTo').options.length)document.getElementById('printTo').value=days.length-1;
   
-  // Scan for hakbatzot — find all unique subject names that appear as multiple groups in a cell
-  const hakbatzot=new Set();
-  let hasHakbatzot=false;
+  // Scan for hakbatzot — group by base subject name
+  const subjectGroups={}; // baseName -> Set of full "subject (room)" keys
   days.forEach(d=>{
     for(let h=0;h<d.lessons.length;h++){
       const groups=parseLessons(d.lessons[h]||'');
       if(groups.length>1){
-        hasHakbatzot=true;
+        // Find the common base subject
+        const baseNames=groups.map(g=>getBaseSubject(g.subject));
+        const commonBase=baseNames[0]; // use first as representative
+        if(!subjectGroups[commonBase])subjectGroups[commonBase]=new Set();
         groups.forEach(g=>{
-          // Use subject+room as unique key for the hakbatza
           const key=g.subject+(g.room?' ('+g.room+')':'');
-          hakbatzot.add(key);
+          subjectGroups[commonBase].add(key);
         });
       }
     }
   });
   
-  const hSel=document.getElementById('hakbatzaSelect');
-  hSel.innerHTML='<option value="all">הדפס את כל ההקבצות ('+hakbatzot.size+')</option>';
+  const hList=document.getElementById('hakbatzaList');
+  hList.innerHTML='';
+  const hasHakbatzot=Object.keys(subjectGroups).length>0;
+  
   if(hasHakbatzot){
-    // Sort and add unique hakbatzot
-    [...hakbatzot].sort().forEach(h=>{
-      const o=document.createElement('option');o.value=h;o.textContent=h;hSel.appendChild(o);
+    Object.entries(subjectGroups).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([base, options])=>{
+      const div=document.createElement('div');
+      div.style.cssText='background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px';
+      const label=document.createElement('div');
+      label.style.cssText='font-size:12px;font-weight:600;color:var(--text-bright);margin-bottom:4px';
+      label.textContent=base;
+      div.appendChild(label);
+      const sel=document.createElement('select');
+      sel.dataset.base=base;
+      sel.className='hakbatza-sel';
+      sel.style.cssText='width:100%;appearance:none;background:var(--surface-3);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-family:Heebo;font-size:12px;outline:none';
+      const allOpt=document.createElement('option');
+      allOpt.value='all';allOpt.textContent='כל ההקבצות ('+options.size+')';
+      sel.appendChild(allOpt);
+      [...options].sort().forEach(o=>{const opt=document.createElement('option');opt.value=o;opt.textContent=o;sel.appendChild(opt)});
+      div.appendChild(sel);
+      hList.appendChild(div);
     });
   }
   document.getElementById('hakbatzaSection').style.display=hasHakbatzot?'block':'none';
@@ -448,7 +468,12 @@ function doPrint(){
   else{const f=parseInt(document.getElementById('printFrom').value),t=parseInt(document.getElementById('printTo').value);const mn=Math.min(f,t),mx=Math.max(f,t);selectedDays=days.slice(mn,mx+1);}
   if(!selectedDays.length)return;
   
-  const hakbatzaFilter=document.getElementById('hakbatzaSelect').value;
+  // Build hakbatza filter map: base subject -> selected key (or 'all')
+  const hakFilters={};
+  document.querySelectorAll('.hakbatza-sel').forEach(sel=>{
+    if(sel.value!=='all')hakFilters[sel.dataset.base]=sel.value;
+  });
+  
   const hours=Math.min(currentData.hours,MAX_HOURS);
   const cls=document.getElementById('dClassSelect');
   const className=cls.options[cls.selectedIndex].text;
@@ -456,9 +481,7 @@ function doPrint(){
   const weekLabel=document.getElementById('dWeekLabel').textContent;
 
   let html='<h2>'+className+' — '+viewName+'</h2>';
-  html+='<div class="print-sub">'+weekLabel+(weekLabel==='השבוע'?'':' | ')+'הודפס: '+new Date().toLocaleDateString('he-IL');
-  if(hakbatzaFilter!=='all')html+=' | הקבצה: '+hakbatzaFilter;
-  html+='</div>';
+  html+='<div class="print-sub">'+weekLabel+(weekLabel==='השבוע'?'':' | ')+'הודפס: '+new Date().toLocaleDateString('he-IL')+'</div>';
   html+='<table><thead><tr><th>שעה</th>';
   selectedDays.forEach(d=>{html+='<th>'+d.name+'<br>'+d.date+'</th>'});
   html+='</tr></thead><tbody>';
@@ -472,13 +495,16 @@ function doPrint(){
       const lt=h<d.lessons.length?d.lessons[h]:'';
       let groups=parseLessons(lt);
       
-      // Filter by hakbatza if selected
-      if(hakbatzaFilter!=='all'&&groups.length>1){
-        groups=groups.filter(g=>{
-          const key=g.subject+(g.room?' ('+g.room+')':'');
-          return key===hakbatzaFilter;
-        });
-        if(!groups.length)groups=parseLessons(lt).slice(0,1); // fallback to first
+      // Filter hakbatzot per subject
+      if(groups.length>1&&Object.keys(hakFilters).length>0){
+        const base=getBaseSubject(groups[0].subject);
+        if(hakFilters[base]){
+          const filtered=groups.filter(g=>{
+            const key=g.subject+(g.room?' ('+g.room+')':'');
+            return key===hakFilters[base];
+          });
+          if(filtered.length)groups=filtered;
+        }
       }
       
       if(!groups.length){html+='<td></td>';return}
