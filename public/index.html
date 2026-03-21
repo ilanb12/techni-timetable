@@ -232,10 +232,10 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
       <span style="color:var(--text-dim);font-size:13px">עד:</span><select id="printTo"></select>
     </div>
     <div id="hakbatzaSection" style="margin-top:12px">
-      <div class="print-opt" onclick="document.getElementById('compactMode').checked=!document.getElementById('compactMode').checked" style="cursor:pointer">
+      <label class="print-opt" style="cursor:pointer">
         <input type="checkbox" id="compactMode" checked>
-        <label style="cursor:pointer">הדפסה מקוצרת (שם מקצוע בלבד, ללא הקבצות)</label>
-      </div>
+        <span>הדפסה מקוצרת (שם מקצוע בלבד, ללא הקבצות)</span>
+      </label>
     </div>
     <div class="print-btns" style="margin-top:16px">
       <button class="print-cancel" onclick="closePrint()">ביטול</button>
@@ -300,34 +300,46 @@ try{const saved=localStorage.getItem('selectedClass');if(saved){document.getElem
 function parseSL(l){let s=l,r='',d=0,re=-1,rs=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(re===-1)re=i;d++}else if(l[i]==='('){d--;if(d===0){rs=i;break}}}if(rs>0&&re>rs){r=l.substring(rs+1,re);s=l.substring(0,rs).trim()}return{subject:s,room:r}}
 function parseT(l){let d=0,e=-1,s=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(e===-1)e=i;d++}else if(l[i]==='('){d--;if(d===0){s=i;break}}}if(s>0&&e>s){const inside=l.substring(s+1,e);if(/\d/.test(inside))return l.substring(0,s).trim()}return l.trim()}
 
-function isTeacher(l){
-  // If line has parentheses with digits/room words → subject
-  if(/\(\s*\d/.test(l))return false;
-  if(/מעבדת|חדר|אולם|מגרש|ספריה|מקוון/.test(l))return false;
-  // If line has multiple () groups → subject (like סיב"מ + room)
-  const allParens = l.match(/\([^)]*\)/g);
-  if(allParens && allParens.length > 1)return false;
-  // If paren content has " → abbreviation in subject name
-  const pm=l.match(/\(([^)]*)\)/);
-  if(pm && pm[1].includes('"'))return false;
-  // Short line with no parens, no digits, no subject keywords → teacher
-  const words=l.trim().split(/\s+/);
-  if(words.length>=1&&words.length<=5&&!l.includes('(')&&!/\d/.test(l)){
-    const subWords=['מתמטיקה','אנגלית','עברית','היסטוריה','תנ"ך','חשמל','פיזיקה','כימיה','ספרות','מדעי','תכנות','לוגיקה','רובוטיקה','אוריינות','מבוא','תעופה','מכטרוניקה','ארוחת','מסדר','גופני','הכחלה','אזרחות','ביולוגיה','תקשוב','הנדסה','השכלה','פרויקטים','בקרה','אלקטרוניקה','סדנה','אומנות','מוזיקה','טכנולוגיה','תעשייה','חינוך','תכן','דיגיטלי'];
-    if(!subWords.some(w=>l.includes(w)))return true;
-  }
-  // Parens without digits and without quotes → name parens (like זריהן)
-  if(pm&&!/\d/.test(pm[1])&&!pm[1].includes("'")&&!pm[1].includes('"'))return true;
-  return false;
-}
-
 function parseLessons(text){
   if(!text||!text.trim())return[];let ct=null;
   if(text.startsWith('[ביטול]')){ct='cancelled';text=text.substring(7).trim()}else if(text.startsWith('[החלפה]')){ct='changed';text=text.substring(7).trim()}
   const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);if(!lines.length)return[];
   if(ct){const subj=lines[0]||'';const teacher=lines.length>1?lines[1]:'';return[{subject:subj,teacher:teacher,room:'',changeType:ct}]}
+  // Shahaf data alternates: subject line, then teacher line
+  // Subject lines have parentheses with digits (room), or are the first of a pair
+  // Strategy: walk lines in pairs. If a line has (digits) or is followed by a plain name, it's subject+teacher
   const g=[];let i=0;
-  while(i<lines.length){if(!isTeacher(lines[i])){const p=parseSL(lines[i]);let t='';if(i+1<lines.length&&isTeacher(lines[i+1])){t=parseT(lines[i+1]);i+=2}else i++;g.push({subject:p.subject,teacher:t,room:p.room,changeType:null})}else{g.push({subject:lines[i],teacher:'',room:'',changeType:null});i++}}
+  while(i<lines.length){
+    const cur=lines[i];
+    const next=i+1<lines.length?lines[i+1]:null;
+    const p=parseSL(cur);
+    // If current line has room info (parentheses with digits), it's definitely a subject
+    // If next line exists and has NO room info and NO digits, it's likely a teacher
+    if(next && !next.includes('(') && !/\d/.test(next) && !next.startsWith('[') && next.split(/\s+/).length<=4){
+      g.push({subject:p.subject,teacher:next,room:p.room,changeType:null});
+      i+=2;
+    } else if(next && /\(/.test(next) && /\d/.test(next)){
+      // Next line also has room info → it's another subject (no teacher for current)
+      g.push({subject:p.subject,teacher:'',room:p.room,changeType:null});
+      i++;
+    } else if(!next){
+      // Last line — could be subject or teacher
+      // If it has room info or looks like a subject, treat as subject
+      if(p.room || /\d/.test(cur)){
+        g.push({subject:p.subject,teacher:'',room:p.room,changeType:null});
+      } else if(g.length>0 && !cur.includes('(') && cur.split(/\s+/).length<=3){
+        // Short plain text after subjects — likely a standalone teacher, treat as subject
+        g.push({subject:cur,teacher:'',room:'',changeType:null});
+      } else {
+        g.push({subject:p.subject,teacher:'',room:p.room,changeType:null});
+      }
+      i++;
+    } else {
+      // Default: treat current as subject, move on
+      g.push({subject:p.subject,teacher:'',room:p.room,changeType:null});
+      i++;
+    }
+  }
   return g.length?g:[{subject:lines[0],teacher:'',room:'',changeType:null}];
 }
 
