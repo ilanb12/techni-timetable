@@ -216,14 +216,23 @@ function parseSL(l){let s=l,r='',d=0,re=-1,rs=-1;for(let i=l.length-1;i>=0;i--){
 function parseT(l){let d=0,e=-1,s=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(e===-1)e=i;d++}else if(l[i]==='('){d--;if(d===0){s=i;break}}}if(s>0&&e>s){const inside=l.substring(s+1,e);if(/\d/.test(inside))return l.substring(0,s).trim()}return l.trim()}
 
 function isTeacher(l){
+  // If line has parentheses with digits/room words → subject
+  if(/\(\s*\d/.test(l))return false;
+  if(/מעבדת|חדר|אולם|מגרש|ספריה|מקוון/.test(l))return false;
+  // If line has multiple () groups → subject (like סיב"מ + room)
+  const allParens = l.match(/\([^)]*\)/g);
+  if(allParens && allParens.length > 1)return false;
+  // If paren content has " → abbreviation in subject name
   const pm=l.match(/\(([^)]*)\)/);
-  if(pm&&/\d|מעבדת|חדר|אולם|מגרש|ספריה|מקוון/.test(pm[1]))return false;
+  if(pm && pm[1].includes('"'))return false;
+  // Short line with no parens, no digits, no subject keywords → teacher
   const words=l.trim().split(/\s+/);
   if(words.length>=1&&words.length<=5&&!l.includes('(')&&!/\d/.test(l)){
-    const subWords=['מתמטיקה','אנגלית','עברית','היסטוריה','תנ"ך','חשמל','פיזיקה','כימיה','ספרות','מדעי','תכנות','לוגיקה','רובוטיקה','אוריינות','מבוא','תעופה','מכטרוניקה','ארוחת','מסדר','גופני','הכחלה','אזרחות','ביולוגיה','תקשוב','הנדסה','השכלה','פרויקטים','בקרה','אלקטרוניקה','סדנה','אומנות','מוזיקה','טכנולוגיה','תעשייה','חינוך'];
+    const subWords=['מתמטיקה','אנגלית','עברית','היסטוריה','תנ"ך','חשמל','פיזיקה','כימיה','ספרות','מדעי','תכנות','לוגיקה','רובוטיקה','אוריינות','מבוא','תעופה','מכטרוניקה','ארוחת','מסדר','גופני','הכחלה','אזרחות','ביולוגיה','תקשוב','הנדסה','השכלה','פרויקטים','בקרה','אלקטרוניקה','סדנה','אומנות','מוזיקה','טכנולוגיה','תעשייה','חינוך','תכן','דיגיטלי'];
     if(!subWords.some(w=>l.includes(w)))return true;
   }
-  if(pm&&!/\d/.test(pm[1])&&!pm[1].includes("'"))return true;
+  // Parens without digits and without quotes → name parens (like זריהן)
+  if(pm&&!/\d/.test(pm[1])&&!pm[1].includes("'")&&!pm[1].includes('"'))return true;
   return false;
 }
 

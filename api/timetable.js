@@ -302,7 +302,7 @@ module.exports = async (req, res) => {
   const week = parseInt(req.query.week) || 0;
   const cacheKey = `${classId}_${view}_w${week}_merged`;
 
-  if (cache[cacheKey] && Date.now() - cache[cacheKey].time < CACHE_TTL) {
+  if (!req.query.flush && cache[cacheKey] && Date.now() - cache[cacheKey].time < CACHE_TTL) {
     return res.json(cache[cacheKey].data);
   }
 
