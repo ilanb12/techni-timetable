@@ -191,7 +191,7 @@ function mergeIntoGrid(data, examsItems, eventsItems) {
 
   const allItems = [
     ...examsItems.map(e => ({ ...e, marker: '📝' })),
-    ...eventsItems.map(e => ({ ...e, marker: '🎉' }))
+    ...eventsItems.map(e => ({ ...e, marker: '📌' }))
   ];
 
   for (const item of allItems) {

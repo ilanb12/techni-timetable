@@ -181,7 +181,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
     <button class="m-nav-item" data-view="ChangesTable" onclick="switchView('ChangesTable')"><span class="nav-icon">🔄</span>שינויים</button>
     <button class="m-nav-item" data-view="Changes" onclick="switchView('Changes')"><span class="nav-icon">📝</span>רשימה</button>
     <button class="m-nav-item" data-view="Exams" onclick="switchView('Exams')"><span class="nav-icon">📋</span>מבחנים</button>
-    <button class="m-nav-item" data-view="Events" onclick="switchView('Events')"><span class="nav-icon">🎉</span>אירועים</button>
+    <button class="m-nav-item" data-view="Events" onclick="switchView('Events')"><span class="nav-icon">📌</span>אירועים</button>
   </nav>
 </div>
 
@@ -236,7 +236,8 @@ function parseLessons(text){
   return g.length?g:[{subject:lines[0],teacher:'',room:'',changeType:null}];
 }
 
-function lType(g){if(!g)return'empty';if(g.changeType==='cancelled')return'cancelled';if(g.changeType==='changed')return'changed';const s=g.subject;if(s.startsWith('📝'))return'exam';if(s.startsWith('🎉'))return'event';if(s.includes('ארוחת צהרים'))return'break';if(s.includes('מסדר'))return'formation';if(s.includes('חינוך גופני'))return'pe';return'regular'}
+function lType(g){if(!g)return'empty';if(g.changeType==='cancelled')return'cancelled';if(g.changeType==='changed')return'changed';const s=g.subject;if(s.startsWith('📝'))return'exam';if(s.startsWith('📌'))return'event';if(s.includes('ארוחת צהרים'))return'break';if(s.includes('מסדר'))return'formation';if(s.includes('חינוך גופני'))return'pe';return'regular'}
+function typeIcon(t){return{break:'🍽️ ',formation:'🫡 ',pe:'🏃 ',cancelled:'❌ ',changed:'🔄 ',exam:'📝 ',event:'📌 '}[t]||''}
 function isCur(h){const now=new Date(),t=HT[h];if(!t)return false;const[sh,sm]=t.s.split(':').map(Number),[eh,em]=t.e.split(':').map(Number),c=now.getHours()*60+now.getMinutes();return c>=sh*60+sm&&c<=eh*60+em}
 
 // MOBILE
@@ -246,7 +247,7 @@ function renderMDay(){document.querySelectorAll('.m-day-tab').forEach((t,i)=>t.c
 const day=currentData.days[selectedDay],hours=Math.min(currentData.hours,MAX_HOURS);let html='',has=false;
 for(let h=0;h<hours;h++){const lt=h<day.lessons.length?day.lessons[h]:'';const groups=parseLessons(lt);if(!groups.length)continue;const type=lType(groups[0]);if(type==='empty')continue;has=true;const ic=isCur(h)&&day.isToday,t=HT[h]||{s:'',e:''};
 html+='<div class="m-lesson-card '+type+(ic?' current':'')+'"><div class="m-hour-badge"><div class="m-hour-num">'+h+'</div><div class="m-hour-time">'+t.s+'<br>'+t.e+'</div></div><div class="m-lesson-info">';
-groups.forEach((g,gi)=>{if(gi>0)html+='<div class="m-group-sep"></div>';html+='<div class="m-lesson-subject">'+g.subject+'</div>';if(g.teacher)html+='<div class="m-lesson-teacher">'+g.teacher+'</div>';if(g.room)html+='<div class="m-lesson-room">'+g.room+'</div>'});
+groups.forEach((g,gi)=>{if(gi>0)html+='<div class="m-group-sep"></div>';html+='<div class="m-lesson-subject">'+typeIcon(lType(g))+g.subject+'</div>';if(g.teacher)html+='<div class="m-lesson-teacher">'+g.teacher+'</div>';if(g.room)html+='<div class="m-lesson-room">'+g.room+'</div>'});
 html+='</div></div>'}
 if(!has)html='<div class="m-empty"><div class="m-empty-icon">😎</div>אין שיעורים ביום הזה</div>';c.innerHTML=html}
 
@@ -262,7 +263,7 @@ for(let h=0;h<hours;h++){const t=HT[h]||{s:'',e:''},ic=isCur(h);html+='<tr><td><
 data.days.forEach(d=>{const lt=h<d.lessons.length?d.lessons[h]:'';const groups=parseLessons(lt);const type=groups.length?lType(groups[0]):'empty';const cur=ic&&d.isToday?'cur':'';
 html+='<td class="'+(d.isToday?'today-col':'')+'">';
 if(!groups.length)html+='<div class="cell"></div>';
-else{html+='<div class="cell has '+type+' '+cur+'">';groups.forEach((g,i)=>{if(i>0)html+='<div class="gsep"></div>';html+='<div class="subj">'+g.subject+'</div>'+(g.teacher?'<div class="tchr">'+g.teacher+'</div>':'')+(g.room?'<div class="room">'+g.room+'</div>':'')});html+='</div>'}
+else{html+='<div class="cell has '+type+' '+cur+'">';groups.forEach((g,i)=>{if(i>0)html+='<div class="gsep"></div>';html+='<div class="subj">'+typeIcon(lType(g))+g.subject+'</div>'+(g.teacher?'<div class="tchr">'+g.teacher+'</div>':'')+(g.room?'<div class="room">'+g.room+'</div>':'')});html+='</div>'}
 html+='</td>'});html+='</tr>'}
 html+='</tbody></table>';el.innerHTML=html}
 
