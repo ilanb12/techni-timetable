@@ -50,8 +50,6 @@ function buildPostData(fields, extra) {
 }
 
 function cleanHtml(text) {
-  // Protect <- arrows before stripping HTML tags
-  text = text.replace(/<-/g, '⟵');
   return text.replace(/<br\s*\/?>/gi, '\n').replace(/<div[^>]*>/gi, '\n').replace(/<\/div>/gi, '')
     .replace(/<b>/gi, '').replace(/<\/b>/gi, '').replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
@@ -127,26 +125,32 @@ function parseChangesTableView(html) {
           // Append remaining TTLesson divs (unchanged הקבצות)
           if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else if (fillChange) {
-          // Raw format: "[substitute] <- [original teacher] [room]"
-          // cleanHtml converts <- to ⟵
-          const raw = cleanHtml(fillChange[1]);
-          let substitute = '';
-          if (raw.includes('⟵')) {
-            substitute = raw.split('⟵')[0].trim();
+          // Two formats:
+          // Type 1: "substitute <- original room" (with TTLesson below)
+          // Type 2: "substitute, subject" (no TTLesson)
+          const rawHtml = fillChange[1].replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
+          const rawText = rawHtml.replace(/<[^>]+>/g, '').trim();
+
+          let substitute = '', subj = '';
+          if (rawText.includes('<-')) {
+            // Type 1: "אהרוני יובל <- רצון אלמוג 519 מעבדת מחשבים (יא')"
+            substitute = rawText.split('<-')[0].trim();
+            // Get subject from TTLesson <b> tag
+            const bMatch = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
+            subj = bMatch ? cleanHtml(bMatch[1]) : '';
+          } else if (rawText.includes(',')) {
+            // Type 2: "כהן שילת, חשמל"
+            const parts = rawText.split(',').map(s => s.trim());
+            substitute = parts[0] || '';
+            subj = parts.slice(1).join(', ').trim();
           } else {
-            substitute = raw.split(',')[0].trim();
+            subj = rawText;
           }
-          // Get subject from first TTLesson <b> tag
-          const lessonSubj = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
-          const subj = lessonSubj ? cleanHtml(lessonSubj[1]) : '';
-          // Build change text
+
           cellText = '🔄 ' + (subj || substitute);
           if (substitute) cellText += '\nמחליף: ' + substitute;
-          // Append remaining TTLesson divs (other הקבצות)
-          if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else cellText = lessonTexts.join('\n');
-        // Final cleanup of any stray characters
-        data.days[d].lessons.push(cellText.replace(/⟵/g, '').replace(/[\uFFFD]/g, '').replace(/  +/g, ' ').trim());
+        data.days[d].lessons.push(cellText.trim());
       } else data.days[d].lessons.push('');
     }
   }
