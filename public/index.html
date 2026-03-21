@@ -247,7 +247,7 @@ function parseLessons(text){
 }
 
 function lType(g){if(!g)return'empty';if(g.changeType==='cancelled')return'cancelled';if(g.changeType==='changed')return'changed';const s=g.subject;if(s.startsWith('[מבחן]'))return'exam';if(s.startsWith('[אירוע]'))return'event';if(s.includes('ארוחת צהרים'))return'break';if(s.includes('מסדר'))return'formation';if(s.includes('חינוך גופני'))return'pe';return'regular'}
-function typeIcon(t){return{break:'🍽️ ',formation:'🫡 ',pe:'🏃 ',cancelled:'❌ ',changed:'↔ '}[t]||''}
+function typeIcon(t){return{break:'🍽️ ',formation:'🫡 ',pe:'🏃 ',cancelled:'❌ ',changed:'🔁 '}[t]||''}
 function isCur(h){const now=new Date(),t=HT[h];if(!t)return false;const[sh,sm]=t.s.split(':').map(Number),[eh,em]=t.e.split(':').map(Number),c=now.getHours()*60+now.getMinutes();return c>=sh*60+sm&&c<=eh*60+em}
 
 // MOBILE
