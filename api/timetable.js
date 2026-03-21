@@ -53,7 +53,7 @@ function cleanHtml(text) {
   return text.replace(/<br\s*\/?>/gi, '\n').replace(/<div[^>]*>/gi, '\n').replace(/<\/div>/gi, '')
     .replace(/<b>/gi, '').replace(/<\/b>/gi, '').replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
-    .replace(/\n\s*\n/g, '\n').trim();
+    .replace(/[\uFFFD\uFFFE\uFFFF]/g, '').replace(/<-|←/g, '').replace(/\n\s*\n/g, '\n').trim();
 }
 
 function parseSimpleTTTable(html) {
@@ -114,11 +114,10 @@ function parseChangesTableView(html) {
         let lessonTexts = lessons.map(l => cleanHtml(l[1])).filter(Boolean);
         const freeChange = cellContent.match(/leFreeChange[^>]*>([\s\S]*?)<\/td>/i);
         const illChange = cellContent.match(/illChange[^>]*>([\s\S]*?)<\/td>/i);
-        let changeMarker = '';
-        if (freeChange) changeMarker = '❌ ' + cleanHtml(freeChange[1]);
-        else if (illChange) changeMarker = '🔄 ' + cleanHtml(illChange[1]);
-        let cellText = lessonTexts.join('\n');
-        if (changeMarker) cellText = changeMarker + (cellText ? '\n' + cellText : '');
+        let cellText = '';
+        if (freeChange) cellText = '❌ ' + cleanHtml(freeChange[1]);
+        else if (illChange) cellText = '🔄 ' + cleanHtml(illChange[1]);
+        else cellText = lessonTexts.join('\n');
         data.days[d].lessons.push(cellText);
       } else data.days[d].lessons.push('');
     }
