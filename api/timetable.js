@@ -123,12 +123,24 @@ function parseChangesTableView(html) {
           const teacher = parts[1] || '';
           cellText = '❌ ' + subj + (teacher ? '\n' + teacher : '');
         } else if (fillChange) {
-          // Format: "[substitute teacher], [subject]"
-          const raw = cleanHtml(fillChange[1]);
-          const parts = raw.split(',').map(s => s.trim());
-          const teacher = parts[0] || '';
-          const subj = parts.slice(1).join(', ').trim() || raw;
-          cellText = '🔄 ' + subj + (teacher ? '\n' + teacher : '');
+          // Format: "[substitute] <- [original teacher] [room]"
+          // TTLesson div has the subject
+          const raw = cleanHtml(fillChange[1]).replace(/←/g, '<-');
+          let substitute = '', original = '';
+          if (raw.includes('<-')) {
+            const sides = raw.split('<-').map(s => s.trim());
+            substitute = sides[0] || '';
+            original = sides[1] || '';
+          } else {
+            // Fallback: simple "teacher, subject" format
+            const parts = raw.split(',').map(s => s.trim());
+            substitute = parts[0] || '';
+            original = parts.slice(1).join(', ').trim();
+          }
+          // Get subject from TTLesson if available
+          const lessonSubj = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
+          const subj = lessonSubj ? cleanHtml(lessonSubj[1]) : original || substitute;
+          cellText = '🔄 ' + subj + (substitute ? '\nמחליף: ' + substitute : '');
         } else cellText = lessonTexts.join('\n');
         data.days[d].lessons.push(cellText);
       } else data.days[d].lessons.push('');
