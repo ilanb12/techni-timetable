@@ -50,10 +50,12 @@ function buildPostData(fields, extra) {
 }
 
 function cleanHtml(text) {
+  // Protect <- arrows before stripping HTML tags
+  text = text.replace(/<-/g, '⟵');
   return text.replace(/<br\s*\/?>/gi, '\n').replace(/<div[^>]*>/gi, '\n').replace(/<\/div>/gi, '')
     .replace(/<b>/gi, '').replace(/<\/b>/gi, '').replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
-    .replace(/[\uFFFD\uFFFE\uFFFF]/g, '').replace(/<-|←/g, '').replace(/\n\s*\n/g, '\n').trim();
+    .replace(/[\uFFFD\uFFFE\uFFFF]/g, '').replace(/\n\s*\n/g, '\n').trim();
 }
 
 function parseSimpleTTTable(html) {
@@ -125,25 +127,26 @@ function parseChangesTableView(html) {
           // Append remaining TTLesson divs (unchanged הקבצות)
           if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else if (fillChange) {
-          // Format: "[substitute] <- [original] [room]"
-          const raw = fillChange[1].replace(/&nbsp;/g,' ').replace(/<[^>]+>/g,'').replace(/&#39;/g,"'").replace(/←/g,'<-').trim();
+          // Raw format: "[substitute] <- [original teacher] [room]"
+          // cleanHtml converts <- to ⟵
+          const raw = cleanHtml(fillChange[1]);
           let substitute = '';
-          if (raw.includes('<-')) {
-            substitute = raw.split('<-')[0].trim();
+          if (raw.includes('⟵')) {
+            substitute = raw.split('⟵')[0].trim();
           } else {
             substitute = raw.split(',')[0].trim();
           }
-          // Get subject + room from first TTLesson
+          // Get subject from first TTLesson <b> tag
           const lessonSubj = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
           const subj = lessonSubj ? cleanHtml(lessonSubj[1]) : '';
-          // Get room from TTLesson
-          const roomMatch = cellContent.match(/<b>[\s\S]*?<\/b>[^(]*(\([^)]*\))/i);
-          const room = roomMatch ? cleanHtml(roomMatch[1]) : '';
+          // Build change text
           cellText = '🔄 ' + (subj || substitute);
-          if (substitute) cellText += '\n' + substitute;
-          if (room) cellText += '\n' + room;
+          if (substitute) cellText += '\nמחליף: ' + substitute;
+          // Append remaining TTLesson divs (other הקבצות)
+          if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else cellText = lessonTexts.join('\n');
-        data.days[d].lessons.push(cellText);
+        // Final cleanup of any stray characters
+        data.days[d].lessons.push(cellText.replace(/⟵/g, '').replace(/[\uFFFD]/g, '').replace(/  +/g, ' ').trim());
       } else data.days[d].lessons.push('');
     }
   }
