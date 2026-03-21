@@ -277,8 +277,8 @@ module.exports = async (req, res) => {
     const data = parseResponse(html, view);
     data.week = week;
 
-    // For grid views, also fetch exams and events to merge into the grid
-    if (view === 'TimeTable' || view === 'ChangesTable') {
+    // Only merge exams/events into ChangesTable (מערכת ושינויים), not the base TimeTable
+    if (view === 'ChangesTable') {
       try {
         const [examsHtml, eventsHtml] = await Promise.all([
           fetchTimetable(classId, 'Exams', week),

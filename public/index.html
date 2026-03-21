@@ -170,14 +170,14 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
   <div class="m-class-bar"><select class="m-class-select" id="mClassSelect"></select></div>
   <div class="m-day-tabs" id="mDayTabs"></div>
   <div class="week-nav" id="mWeekNav">
-    <button class="week-btn" onclick="changeWeek(1)" title="שבוע קודם">→</button>
+    <button class="week-btn" onclick="changeWeek(-1)" title="שבוע הבא">→</button>
     <button class="week-today hidden" id="mWeekToday" onclick="changeWeek(-weekOffset)">השבוע</button>
     <span class="week-label" id="mWeekLabel">השבוע</span>
-    <button class="week-btn" onclick="changeWeek(-1)" title="שבוע הבא">←</button>
+    <button class="week-btn" onclick="changeWeek(1)" title="שבוע קודם">←</button>
   </div>
   <div class="m-content" id="mContent"><div class="m-loading"><div class="m-spinner"></div><div style="color:var(--text-dim);font-size:13px">טוען...</div></div></div>
   <nav class="m-nav">
-    <button class="m-nav-item active" data-view="TimeTable" onclick="switchView('TimeTable')"><span class="nav-icon">📅</span>מערכת</button>
+    <button class="m-nav-item active" data-view="TimeTable" onclick="switchView('TimeTable')"><span class="nav-icon">📅</span>קבועה</button>
     <button class="m-nav-item" data-view="ChangesTable" onclick="switchView('ChangesTable')"><span class="nav-icon">🔄</span>שינויים</button>
     <button class="m-nav-item" data-view="Changes" onclick="switchView('Changes')"><span class="nav-icon">📝</span>רשימה</button>
     <button class="m-nav-item" data-view="Exams" onclick="switchView('Exams')"><span class="nav-icon">📋</span>מבחנים</button>
@@ -191,8 +191,8 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="d-header-right"><div class="d-logo">חא</div><div class="d-title"><h1>המכללה הטכנולוגית של חיל האוויר</h1><div class="sub">מערכת שעות — באר שבע</div></div></div>
     <div class="d-header-left"><div class="d-badge"><span class="dot"></span><span id="dUpdateTime">טוען...</span></div><button class="help-btn" onclick="openHelp()" style="width:36px;height:36px;font-size:16px">?</button></div>
   </div>
-  <div class="d-controls"><select class="d-select" id="dClassSelect"></select><div class="d-tabs"><button class="d-tab active" data-view="TimeTable" onclick="switchView('TimeTable')">מערכת שעות</button><button class="d-tab" data-view="ChangesTable" onclick="switchView('ChangesTable')">מערכת ושינויים</button><button class="d-tab" data-view="Changes" onclick="switchView('Changes')">שינויים</button><button class="d-tab" data-view="Exams" onclick="switchView('Exams')">מבחנים</button><button class="d-tab" data-view="Messages" onclick="switchView('Messages')">הודעות כלליות</button><button class="d-tab" data-view="Events" onclick="switchView('Events')">אירועים</button></div>
-  <div class="d-week-nav"><button class="week-btn" onclick="changeWeek(1)" title="שבוע קודם">→</button><button class="week-today hidden" id="dWeekToday" onclick="changeWeek(-weekOffset)">השבוע</button><span class="week-label" id="dWeekLabel">השבוע</span><button class="week-btn" onclick="changeWeek(-1)" title="שבוע הבא">←</button></div></div>
+  <div class="d-controls"><select class="d-select" id="dClassSelect"></select><div class="d-tabs"><button class="d-tab active" data-view="TimeTable" onclick="switchView('TimeTable')">מערכת קבועה</button><button class="d-tab" data-view="ChangesTable" onclick="switchView('ChangesTable')">מערכת ושינויים</button><button class="d-tab" data-view="Changes" onclick="switchView('Changes')">שינויים</button><button class="d-tab" data-view="Exams" onclick="switchView('Exams')">מבחנים</button><button class="d-tab" data-view="Messages" onclick="switchView('Messages')">הודעות כלליות</button><button class="d-tab" data-view="Events" onclick="switchView('Events')">אירועים</button></div>
+  <div class="d-week-nav"><button class="week-btn" onclick="changeWeek(-1)" title="שבוע הבא">→</button><button class="week-today hidden" id="dWeekToday" onclick="changeWeek(-weekOffset)">השבוע</button><span class="week-label" id="dWeekLabel">השבוע</span><button class="week-btn" onclick="changeWeek(1)" title="שבוע קודם">←</button></div></div>
   <div class="d-container" id="dContent"></div>
 </div>
 
