@@ -231,7 +231,7 @@ function parseLessons(text){
   if(!text||!text.trim())return[];let ct=null;
   if(text.startsWith('❌')){ct='cancelled';text=text.substring(1).trim()}else if(text.startsWith('🔄')){ct='changed';text=text.substring(1).trim()}
   const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);if(!lines.length)return[];
-  if(ct)return[{subject:lines.join(', '),teacher:'',room:'',changeType:ct}];
+  if(ct){const subj=lines[0]||'';const teacher=lines.length>1?lines[1]:'';return[{subject:subj,teacher:teacher,room:'',changeType:ct}]}
   const g=[];let i=0;
   while(i<lines.length){if(!isTeacher(lines[i])){const p=parseSL(lines[i]);let t='';if(i+1<lines.length&&isTeacher(lines[i+1])){t=parseT(lines[i+1]);i+=2}else i++;g.push({subject:p.subject,teacher:t,room:p.room,changeType:null})}else{g.push({subject:lines[i],teacher:'',room:'',changeType:null});i++}}
   return g.length?g:[{subject:lines[0],teacher:'',room:'',changeType:null}];

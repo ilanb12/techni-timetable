@@ -112,12 +112,24 @@ function parseChangesTableView(html) {
         const cellContent = ttcells[d][1];
         const lessons = [...cellContent.matchAll(/<div[^>]*class="TTLesson"[^>]*>([\s\S]*?)<\/div>/gi)];
         let lessonTexts = lessons.map(l => cleanHtml(l[1])).filter(Boolean);
-        const freeChange = cellContent.match(/leFreeChange[^>]*>([\s\S]*?)<\/td>/i);
-        const illChange = cellContent.match(/illChange[^>]*>([\s\S]*?)<\/td>/i);
+        const freeChange = cellContent.match(/FreeChange[^>]*>([\s\S]*?)<\/td>/i);
+        const fillChange = cellContent.match(/FillChange[^>]*>([\s\S]*?)<\/td>/i);
         let cellText = '';
-        if (freeChange) cellText = '❌ ' + cleanHtml(freeChange[1]);
-        else if (illChange) cellText = '🔄 ' + cleanHtml(illChange[1]);
-        else cellText = lessonTexts.join('\n');
+        if (freeChange) {
+          // Format: "ביטול [subject], [teacher]"
+          const raw = cleanHtml(freeChange[1]);
+          const parts = raw.replace(/^ביטול\s*/, '').split(',').map(s => s.trim()).filter(Boolean);
+          const subj = (parts[0] || 'ביטול').replace(/,\s*$/, '');
+          const teacher = parts[1] || '';
+          cellText = '❌ ' + subj + (teacher ? '\n' + teacher : '');
+        } else if (fillChange) {
+          // Format: "[substitute teacher], [subject]"
+          const raw = cleanHtml(fillChange[1]);
+          const parts = raw.split(',').map(s => s.trim());
+          const teacher = parts[0] || '';
+          const subj = parts.slice(1).join(', ').trim() || raw;
+          cellText = '🔄 ' + subj + (teacher ? '\n' + teacher : '');
+        } else cellText = lessonTexts.join('\n');
         data.days[d].lessons.push(cellText);
       } else data.days[d].lessons.push('');
     }
