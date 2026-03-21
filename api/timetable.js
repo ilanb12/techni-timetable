@@ -152,7 +152,8 @@ function parseChangesTableView(html) {
           // Append remaining TTLesson divs (other הקבצות that didn't change)
           if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else cellText = lessonTexts.join('\n');
-        data.days[d].lessons.push(cellText.trim());
+        // Final aggressive cleanup
+        data.days[d].lessons.push(cellText.replace(/[\uFFFD\uFFFE\uFFFF]/g, '').replace(/<-/g, '').replace(/⟵/g, '').replace(/  +/g, ' ').trim());
       } else data.days[d].lessons.push('');
     }
   }
