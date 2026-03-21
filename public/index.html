@@ -238,7 +238,7 @@ function isTeacher(l){
 
 function parseLessons(text){
   if(!text||!text.trim())return[];let ct=null;
-  if(text.startsWith('❌')){ct='cancelled';text=text.substring(1).trim()}else if(text.startsWith('🔄')){ct='changed';text=text.substring(1).trim()}
+  if(text.startsWith('[ביטול]')){ct='cancelled';text=text.substring(7).trim()}else if(text.startsWith('[החלפה]')){ct='changed';text=text.substring(7).trim()}
   const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);if(!lines.length)return[];
   if(ct){const subj=lines[0]||'';const teacher=lines.length>1?lines[1]:'';return[{subject:subj,teacher:teacher,room:'',changeType:ct}]}
   const g=[];let i=0;
@@ -246,8 +246,8 @@ function parseLessons(text){
   return g.length?g:[{subject:lines[0],teacher:'',room:'',changeType:null}];
 }
 
-function lType(g){if(!g)return'empty';if(g.changeType==='cancelled')return'cancelled';if(g.changeType==='changed')return'changed';const s=g.subject;if(s.startsWith('📝'))return'exam';if(s.startsWith('📌'))return'event';if(s.includes('ארוחת צהרים'))return'break';if(s.includes('מסדר'))return'formation';if(s.includes('חינוך גופני'))return'pe';return'regular'}
-function typeIcon(t){return{break:'🍽️ ',formation:'🫡 ',pe:'🏃 ',cancelled:'❌ ',changed:'🔄 '}[t]||''}
+function lType(g){if(!g)return'empty';if(g.changeType==='cancelled')return'cancelled';if(g.changeType==='changed')return'changed';const s=g.subject;if(s.startsWith('[מבחן]'))return'exam';if(s.startsWith('[אירוע]'))return'event';if(s.includes('ארוחת צהרים'))return'break';if(s.includes('מסדר'))return'formation';if(s.includes('חינוך גופני'))return'pe';return'regular'}
+function typeIcon(t){return{break:'🍽️ ',formation:'🫡 ',pe:'🏃 ',cancelled:'❌ ',changed:'↔ '}[t]||''}
 function isCur(h){const now=new Date(),t=HT[h];if(!t)return false;const[sh,sm]=t.s.split(':').map(Number),[eh,em]=t.e.split(':').map(Number),c=now.getHours()*60+now.getMinutes();return c>=sh*60+sm&&c<=eh*60+em}
 
 // MOBILE

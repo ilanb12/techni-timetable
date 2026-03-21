@@ -121,7 +121,7 @@ function parseChangesTableView(html) {
           const parts = raw.replace(/^ביטול\s*/, '').split(',').map(s => s.trim()).filter(Boolean);
           const subj = (parts[0] || 'ביטול').replace(/,\s*$/, '');
           const teacher = parts[1] || '';
-          cellText = '❌ ' + subj + (teacher ? '\n' + teacher : '');
+          cellText = '[ביטול] ' + subj + (teacher ? '\n' + teacher : '');
           // Append remaining TTLesson divs (unchanged הקבצות)
           if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else if (fillChange) {
@@ -147,7 +147,7 @@ function parseChangesTableView(html) {
             subj = rawText;
           }
 
-          cellText = '🔄 ' + (subj || substitute);
+          cellText = '[החלפה] ' + (subj || substitute);
           if (substitute) cellText += '\nמחליף: ' + substitute;
           // Append remaining TTLesson divs (other הקבצות that didn't change)
           if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
@@ -224,8 +224,8 @@ function mergeIntoGrid(data, examsItems, eventsItems) {
   if (!data.days || !data.days.length) return data;
 
   const allItems = [
-    ...examsItems.map(e => ({ ...e, marker: '📝' })),
-    ...eventsItems.map(e => ({ ...e, marker: '📌' }))
+    ...examsItems.map(e => ({ ...e, marker: '[מבחן]' })),
+    ...eventsItems.map(e => ({ ...e, marker: '[אירוע]' }))
   ];
 
   for (const item of allItems) {
