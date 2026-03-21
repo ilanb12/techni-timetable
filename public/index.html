@@ -137,6 +137,53 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 .week-today.hidden{display:none}
 .d-week-nav{display:flex;align-items:center;gap:12px}
 
+/* PRINT MODAL */
+.print-modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center;padding:20px}
+.print-modal-overlay.open{display:flex}
+.print-modal{background:var(--surface);border-radius:18px;padding:24px;max-width:380px;width:100%;border:1px solid var(--border)}
+.print-modal h2{font-size:18px;font-weight:700;color:var(--text-bright);margin-bottom:16px;text-align:center}
+.print-options{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.print-opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);cursor:pointer;transition:all .15s}
+.print-opt:hover{border-color:var(--blue)}
+.print-opt.selected{border-color:var(--blue);background:rgba(59,130,246,.1)}
+.print-opt input{accent-color:var(--blue)}
+.print-opt label{font-size:14px;color:var(--text);cursor:pointer;flex:1}
+.print-range{display:none;gap:8px;margin-bottom:16px;align-items:center;justify-content:center}
+.print-range.show{display:flex}
+.print-range select{appearance:none;background:var(--surface-2);border:1px solid var(--border);color:var(--text-bright);padding:8px 12px;border-radius:8px;font-family:'Heebo';font-size:13px}
+.print-btns{display:flex;gap:8px}
+.print-btns button{flex:1;padding:10px;border-radius:10px;border:none;font-family:'Heebo';font-size:14px;font-weight:600;cursor:pointer}
+.print-cancel{background:var(--surface-2);color:var(--text-dim)}
+.print-go{background:var(--blue);color:white}
+.print-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-dim);font-family:'Heebo';font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
+.print-btn:hover{color:var(--blue-light);border-color:var(--blue)}
+
+/* PRINT STYLES */
+@media print{
+  body{background:white!important;color:black!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .mobile-app,.d-header,.d-controls,.modal-overlay,.print-modal-overlay{display:none!important}
+  .desktop-app{display:block!important;padding:0!important;max-width:100%!important}
+  .d-container{border:none!important;box-shadow:none!important;border-radius:0!important;background:white!important}
+  #dContent{display:none!important}
+  #printArea{display:block!important}
+  #printArea h2{font-size:16px;font-weight:700;text-align:center;margin:8px 0;font-family:'Heebo'}
+  #printArea .print-sub{font-size:12px;text-align:center;color:#666;margin-bottom:12px}
+  #printArea table{width:100%;border-collapse:collapse;font-family:'Heebo';direction:rtl}
+  #printArea th{background:#f0f0f0!important;padding:8px 6px;font-size:11px;font-weight:700;border:1px solid #ccc;text-align:center}
+  #printArea td{padding:4px 6px;border:1px solid #ccc;vertical-align:top;font-size:10px}
+  #printArea td:first-child{text-align:center;background:#f8f8f8!important;font-weight:700;width:50px}
+  #printArea .p-subj{font-weight:700;font-size:10px}
+  #printArea .p-tchr{font-size:9px;color:#555}
+  #printArea .p-room{font-size:8px;color:#888}
+  #printArea .p-sep{border-top:1px dashed #ddd;margin:2px 0}
+  #printArea .p-cancelled .p-subj{color:#c00;text-decoration:line-through}
+  #printArea .p-changed .p-subj{color:#b45309}
+  #printArea .p-break .p-subj{color:#b45309}
+  #printArea .p-event .p-subj{color:#166534}
+  #printArea .p-exam .p-subj{color:#be185d}
+  #printArea .p-formation .p-subj{color:#6d28d9}
+}
+
 @media(max-width:768px){.mobile-app{display:flex}.desktop-app{display:none!important}}
 @media(min-width:769px){.mobile-app{display:none!important}.desktop-app{display:block}}
 </style>
@@ -164,6 +211,31 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
     <button class="modal-close" onclick="closeHelp()">סגור</button>
   </div>
 </div>
+
+<!-- PRINT MODAL -->
+<div class="print-modal-overlay" id="printModal" onclick="if(event.target===this)closePrint()">
+  <div class="print-modal">
+    <h2>🖨️ הדפסת מערכת</h2>
+    <div class="print-options">
+      <div class="print-opt selected" onclick="selectPrintMode('week')"><input type="radio" name="pmode" checked><label>כל השבוע</label></div>
+      <div class="print-opt" onclick="selectPrintMode('day')"><input type="radio" name="pmode"><label>יום בודד</label></div>
+      <div class="print-opt" onclick="selectPrintMode('range')"><input type="radio" name="pmode"><label>טווח ימים</label></div>
+    </div>
+    <div class="print-range" id="printDaySelect">
+      <select id="printDay1"></select>
+    </div>
+    <div class="print-range" id="printRangeSelect">
+      <span style="color:var(--text-dim);font-size:13px">מ:</span><select id="printFrom"></select>
+      <span style="color:var(--text-dim);font-size:13px">עד:</span><select id="printTo"></select>
+    </div>
+    <div class="print-btns">
+      <button class="print-cancel" onclick="closePrint()">ביטול</button>
+      <button class="print-go" onclick="doPrint()">הדפס</button>
+    </div>
+  </div>
+</div>
+
+<div id="printArea" style="display:none"></div>
 
 <!-- MOBILE -->
 <div class="mobile-app" id="mobileApp">
@@ -196,7 +268,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="d-header-left"><div class="d-badge"><span class="dot"></span><span id="dUpdateTime">טוען...</span></div><button class="help-btn" onclick="openHelp()" style="width:36px;height:36px;font-size:16px">?</button></div>
   </div>
   <div class="d-controls"><select class="d-select" id="dClassSelect"></select><div class="d-tabs"><button class="d-tab active" data-view="TimeTable" onclick="switchView('TimeTable')">מערכת קבועה</button><button class="d-tab" data-view="ChangesTable" onclick="switchView('ChangesTable')">מערכת ושינויים</button><button class="d-tab" data-view="Changes" onclick="switchView('Changes')">שינויים</button><button class="d-tab" data-view="Exams" onclick="switchView('Exams')">מבחנים</button><button class="d-tab" data-view="Messages" onclick="switchView('Messages')">הודעות כלליות</button><button class="d-tab" data-view="Events" onclick="switchView('Events')">אירועים</button></div>
-  <div class="d-week-nav"><button class="week-btn" onclick="changeWeek(-1)" title="שבוע שעבר">→</button><button class="week-today hidden" id="dWeekToday" onclick="changeWeek(-weekOffset)">השבוע</button><span class="week-label" id="dWeekLabel">השבוע</span><button class="week-btn" onclick="changeWeek(1)" title="שבוע הבא">←</button></div></div>
+  <div class="d-week-nav"><button class="week-btn" onclick="changeWeek(-1)" title="שבוע שעבר">→</button><button class="week-today hidden" id="dWeekToday" onclick="changeWeek(-weekOffset)">השבוע</button><span class="week-label" id="dWeekLabel">השבוע</span><button class="week-btn" onclick="changeWeek(1)" title="שבוע הבא">←</button></div><button class="print-btn" onclick="openPrint()">🖨️ הדפסה</button></div>
   <div class="d-container" id="dContent"></div>
 </div>
 
@@ -308,6 +380,76 @@ try{const r=await fetch('/api/timetable?classId='+cls+'&view='+currentView+'&wee
 const ts=data.updateTime?'עודכן: '+data.updateTime:'עודכן: '+new Date().toLocaleTimeString('he-IL');document.getElementById('mUpdateTime').textContent=ts;document.getElementById('dUpdateTime').textContent=ts;
 if(GRID_VIEWS.includes(currentView)){renderMDayTabs(data);renderMDay();renderDTable(data)}else{document.getElementById('mDayTabs').style.display='none';renderMList(data.changes,currentView);renderDList(data.changes,currentView)}
 }catch(e){console.error(e);const err='<div style="text-align:center;padding:40px;color:var(--text-dim)">⚠️ '+e.message+'<br><button onclick="loadData()" style="margin-top:12px;padding:8px 20px;background:var(--blue);color:white;border:none;border-radius:8px;font-family:Heebo;cursor:pointer">נסה שוב</button></div>';mC.innerHTML=err;dC.innerHTML=err}}
+
+// PRINT
+let printMode='week';
+function openPrint(){
+  if(!currentData||!currentData.days)return;
+  const days=currentData.days.filter(d=>d.name);
+  ['printDay1','printFrom','printTo'].forEach(id=>{
+    const sel=document.getElementById(id);sel.innerHTML='';
+    days.forEach((d,i)=>{const o=document.createElement('option');o.value=i;o.textContent=d.name+' '+d.date;sel.appendChild(o)});
+  });
+  if(document.getElementById('printTo').options.length)document.getElementById('printTo').value=days.length-1;
+  selectPrintMode('week');
+  document.getElementById('printModal').classList.add('open');
+}
+function closePrint(){document.getElementById('printModal').classList.remove('open')}
+function selectPrintMode(mode){
+  printMode=mode;
+  document.querySelectorAll('.print-opt').forEach((o,i)=>{o.classList.toggle('selected',['week','day','range'][i]===mode);o.querySelector('input').checked=['week','day','range'][i]===mode});
+  document.getElementById('printDaySelect').classList.toggle('show',mode==='day');
+  document.getElementById('printRangeSelect').classList.toggle('show',mode==='range');
+}
+function doPrint(){
+  if(!currentData||!currentData.days)return;
+  const days=currentData.days.filter(d=>d.name);
+  let selectedDays=[];
+  if(printMode==='week')selectedDays=days;
+  else if(printMode==='day'){const i=parseInt(document.getElementById('printDay1').value);selectedDays=[days[i]];}
+  else{const f=parseInt(document.getElementById('printFrom').value),t=parseInt(document.getElementById('printTo').value);const mn=Math.min(f,t),mx=Math.max(f,t);selectedDays=days.slice(mn,mx+1);}
+  if(!selectedDays.length)return;
+  const hours=Math.min(currentData.hours,MAX_HOURS);
+  const cls=document.getElementById('dClassSelect');
+  const className=cls.options[cls.selectedIndex].text;
+  const viewName=currentView==='ChangesTable'?'מערכת ושינויים':'מערכת קבועה';
+  const weekLabel=document.getElementById('dWeekLabel').textContent;
+
+  let html='<h2>'+className+' — '+viewName+'</h2>';
+  html+='<div class="print-sub">'+weekLabel+(weekLabel==='השבוע'?'':' | ')+'הודפס: '+new Date().toLocaleDateString('he-IL')+'</div>';
+  html+='<table><thead><tr><th>שעה</th>';
+  selectedDays.forEach(d=>{html+='<th>'+d.name+'<br>'+d.date+'</th>'});
+  html+='</tr></thead><tbody>';
+  for(let h=0;h<hours;h++){
+    const t=HT[h]||{s:'',e:''};
+    // Check if any day has content in this hour
+    let hasContent=false;
+    selectedDays.forEach(d=>{if(h<d.lessons.length&&d.lessons[h])hasContent=true});
+    if(!hasContent)continue;
+    html+='<tr><td>'+h+'<br><span style="font-size:8px">'+t.s+'-'+t.e+'</span></td>';
+    selectedDays.forEach(d=>{
+      const lt=h<d.lessons.length?d.lessons[h]:'';
+      const groups=parseLessons(lt);
+      if(!groups.length){html+='<td></td>';return}
+      const type=lType(groups[0]);
+      html+='<td>';
+      groups.forEach((g,gi)=>{
+        if(gi>0)html+='<div class="p-sep"></div>';
+        html+='<div class="p-'+type+'"><div class="p-subj">'+g.subject+'</div>';
+        if(g.teacher)html+='<div class="p-tchr">'+g.teacher+'</div>';
+        if(g.room)html+='<div class="p-room">'+g.room+'</div>';
+        html+='</div>';
+      });
+      html+='</td>';
+    });
+    html+='</tr>';
+  }
+  html+='</tbody></table>';
+
+  document.getElementById('printArea').innerHTML=html;
+  closePrint();
+  setTimeout(()=>window.print(),100);
+}
 
 setInterval(loadData,5*60*1000);loadData();
 </script>
