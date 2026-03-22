@@ -57,7 +57,8 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 .mobile-app{display:none;flex-direction:column;height:100vh;height:100dvh}
 .m-header{padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .m-header-right{display:flex;align-items:center;gap:10px}
-.m-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:white}
+.m-logo{width:36px;height:36px;border-radius:9px;overflow:hidden;flex-shrink:0}
+.m-logo img{width:100%;height:100%;object-fit:contain}
 .m-school{font-size:15px;font-weight:700;color:var(--text-bright)}
 .m-header-left{display:flex;align-items:center;gap:8px}
 .m-badge{font-size:10px;color:var(--text-dim);background:var(--surface-2);padding:4px 8px;border-radius:6px}
@@ -128,7 +129,8 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 .desktop-app{display:none;max-width:1400px;margin:0 auto;padding:24px}
 .d-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border)}
 .d-header-right{display:flex;align-items:center;gap:16px}
-.d-logo{width:48px;height:48px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:white}
+.d-logo{width:48px;height:48px;border-radius:12px;overflow:hidden;flex-shrink:0}
+.d-logo img{width:100%;height:100%;object-fit:contain}
 .d-title h1{font-size:22px;font-weight:700;color:var(--text-bright)}.d-title .sub{font-size:13px;color:var(--text-dim);margin-top:2px}
 .d-header-left{display:flex;align-items:center;gap:12px}
 .d-badge{font-size:12px;color:var(--text-dim);background:var(--surface-2);padding:6px 12px;border-radius:8px;display:flex;align-items:center;gap:6px}
@@ -230,6 +232,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 <!-- HELP MODAL -->
 <div class="modal-overlay" id="helpModal" onclick="if(event.target===this)closeHelp()">
   <div class="modal">
+    <img src="/logo-app.png" alt="לוגו" style="width:80px;height:80px;object-fit:contain;display:block;margin:0 auto 12px">
     <h2>אודות מערכת השעות</h2>
     <p>אפליקציה לצפייה במערכת השעות של המכללה הטכנולוגית של חיל האוויר, באר שבע.<br>הנתונים מתעדכנים אוטומטית מהמערכת הרשמית של שחף.</p>
     <h2 style="font-size:15px;margin-bottom:12px">מקרא צבעים</h2>
@@ -285,7 +288,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 <!-- MOBILE -->
 <div class="mobile-app" id="mobileApp">
   <div class="m-header">
-    <div class="m-header-right"><div class="m-logo">חא</div><div class="m-school">טכני חיל האוויר</div></div>
+    <div class="m-header-right"><div class="m-logo"><img src="/logo-app.png" alt="לוגו"></div><div class="m-school">טכני חיל האוויר</div></div>
     <div class="m-header-left"><div class="m-badge" id="mUpdateTime">טוען...</div><button class="help-btn" onclick="toggleTheme()" id="mThemeBtn">🌙</button><button class="help-btn" onclick="openHelp()">?</button></div>
   </div>
   <div class="m-class-bar"><select class="m-class-select" id="mClassSelect"></select></div>
@@ -309,7 +312,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 <!-- DESKTOP -->
 <div class="desktop-app" id="desktopApp">
   <div class="d-header">
-    <div class="d-header-right"><div class="d-logo">חא</div><div class="d-title"><h1>המכללה הטכנולוגית של חיל האוויר</h1><div class="sub">מערכת שעות — באר שבע</div></div></div>
+    <div class="d-header-right"><div class="d-logo"><img src="/logo-app.png" alt="לוגו"></div><div class="d-title"><h1>המכללה הטכנולוגית של חיל האוויר</h1><div class="sub">מערכת שעות — באר שבע</div></div></div>
     <div class="d-header-left"><div class="d-badge"><span class="dot"></span><span id="dUpdateTime">טוען...</span></div><button class="help-btn" onclick="toggleTheme()" id="dThemeBtn" style="width:36px;height:36px;font-size:16px">🌙</button><button class="help-btn" onclick="openHelp()" style="width:36px;height:36px;font-size:16px">?</button></div>
   </div>
   <div class="d-controls"><select class="d-select" id="dClassSelect"></select><div class="d-tabs"><button class="d-tab active" data-view="TimeTable" onclick="switchView('TimeTable')">מערכת קבועה</button><button class="d-tab" data-view="ChangesTable" onclick="switchView('ChangesTable')">מערכת ושינויים</button><button class="d-tab" data-view="Changes" onclick="switchView('Changes')">שינויים</button><button class="d-tab" data-view="Exams" onclick="switchView('Exams')">מבחנים</button><button class="d-tab" data-view="Messages" onclick="switchView('Messages')">הודעות כלליות</button><button class="d-tab" data-view="Events" onclick="switchView('Events')">אירועים</button></div>
