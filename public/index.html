@@ -14,6 +14,26 @@
 --blue:#3b82f6;--blue-light:#60a5fa;--blue-glow:rgba(59,130,246,.15);
 --orange:#f59e0b;--yellow:#eab308;--red:#ef4444;--purple:#8b5cf6;--green:#22c55e;--pink:#ec4899;
 --text:#e2e8f0;--text-dim:#94a3b8;--text-bright:#f8fafc;--border:rgba(255,255,255,.06)}
+[data-theme="light"]{--bg:#f0f2f5;--surface:#ffffff;--surface-2:#f5f6f8;--surface-3:#ebedf0;
+--blue:#2563eb;--blue-light:#3b82f6;--blue-glow:rgba(37,99,235,.1);
+--orange:#d97706;--yellow:#ca8a04;--red:#dc2626;--purple:#7c3aed;--green:#16a34a;--pink:#db2777;
+--text:#1e293b;--text-dim:#64748b;--text-bright:#0f172a;--border:rgba(0,0,0,.08)}
+[data-theme="light"] .m-lesson-card{box-shadow:0 1px 3px rgba(0,0,0,.06)}
+[data-theme="light"] .m-lesson-card.break{background:rgba(245,158,11,.08)}
+[data-theme="light"] .m-lesson-card.formation{background:rgba(124,58,237,.06)}
+[data-theme="light"] .m-lesson-card.cancelled{background:rgba(220,38,38,.06)}
+[data-theme="light"] .m-lesson-card.changed{background:rgba(202,138,4,.06)}
+[data-theme="light"] .m-lesson-card.exam{background:rgba(219,39,119,.06)}
+[data-theme="light"] .m-lesson-card.event{background:rgba(22,163,74,.06)}
+[data-theme="light"] .m-lesson-card.current{background:rgba(37,99,235,.08);box-shadow:0 0 15px rgba(37,99,235,.1)}
+[data-theme="light"] .m-lesson-card.current::after{background:rgba(22,163,74,.12)}
+[data-theme="light"] .tt td.today-col{background:rgba(37,99,235,.03)}
+[data-theme="light"] .tt .cell.cur{background:rgba(37,99,235,.08)}
+[data-theme="light"] .d-container{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+[data-theme="light"] .modal{box-shadow:0 8px 32px rgba(0,0,0,.15)}
+[data-theme="light"] .tt .cell.formation .subj{color:var(--purple)}
+[data-theme="light"] .m-lesson-card.formation .m-lesson-subject{color:var(--purple)}
+[data-theme="light"] .m-class-select,[data-theme="light"] .d-select{background:var(--surface);border-color:var(--border)}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 
@@ -250,7 +270,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 <div class="mobile-app" id="mobileApp">
   <div class="m-header">
     <div class="m-header-right"><div class="m-logo">חא</div><div class="m-school">טכני חיל האוויר</div></div>
-    <div class="m-header-left"><div class="m-badge" id="mUpdateTime">טוען...</div><button class="help-btn" onclick="openHelp()">?</button></div>
+    <div class="m-header-left"><div class="m-badge" id="mUpdateTime">טוען...</div><button class="help-btn" onclick="toggleTheme()" id="mThemeBtn">🌙</button><button class="help-btn" onclick="openHelp()">?</button></div>
   </div>
   <div class="m-class-bar"><select class="m-class-select" id="mClassSelect"></select></div>
   <div class="m-day-tabs" id="mDayTabs"></div>
@@ -274,7 +294,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 <div class="desktop-app" id="desktopApp">
   <div class="d-header">
     <div class="d-header-right"><div class="d-logo">חא</div><div class="d-title"><h1>המכללה הטכנולוגית של חיל האוויר</h1><div class="sub">מערכת שעות — באר שבע</div></div></div>
-    <div class="d-header-left"><div class="d-badge"><span class="dot"></span><span id="dUpdateTime">טוען...</span></div><button class="help-btn" onclick="openHelp()" style="width:36px;height:36px;font-size:16px">?</button></div>
+    <div class="d-header-left"><div class="d-badge"><span class="dot"></span><span id="dUpdateTime">טוען...</span></div><button class="help-btn" onclick="toggleTheme()" id="dThemeBtn" style="width:36px;height:36px;font-size:16px">🌙</button><button class="help-btn" onclick="openHelp()" style="width:36px;height:36px;font-size:16px">?</button></div>
   </div>
   <div class="d-controls"><select class="d-select" id="dClassSelect"></select><div class="d-tabs"><button class="d-tab active" data-view="TimeTable" onclick="switchView('TimeTable')">מערכת קבועה</button><button class="d-tab" data-view="ChangesTable" onclick="switchView('ChangesTable')">מערכת ושינויים</button><button class="d-tab" data-view="Changes" onclick="switchView('Changes')">שינויים</button><button class="d-tab" data-view="Exams" onclick="switchView('Exams')">מבחנים</button><button class="d-tab" data-view="Messages" onclick="switchView('Messages')">הודעות כלליות</button><button class="d-tab" data-view="Events" onclick="switchView('Events')">אירועים</button></div>
   <div class="d-week-nav"><button class="week-btn" onclick="changeWeek(-1)" title="שבוע שעבר">→</button><button class="week-today hidden" id="dWeekToday" onclick="changeWeek(-weekOffset)">השבוע</button><span class="week-label" id="dWeekLabel">השבוע</span><button class="week-btn" onclick="changeWeek(1)" title="שבוע הבא">←</button></div><button class="print-btn" onclick="openPrint()">🖨️ הדפסה</button></div>
@@ -282,6 +302,33 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 </div>
 
 <script>
+// THEME
+function getSystemTheme(){return window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'}
+function applyTheme(t){
+  if(t==='light')document.documentElement.setAttribute('data-theme','light');
+  else document.documentElement.removeAttribute('data-theme');
+  const icon=t==='light'?'☀️':'🌙';
+  const mb=document.getElementById('mThemeBtn');if(mb)mb.textContent=icon;
+  const db=document.getElementById('dThemeBtn');if(db)db.textContent=icon;
+  document.querySelector('meta[name="theme-color"]').content=t==='light'?'#f0f2f5':'#0a0e1a';
+}
+function toggleTheme(){
+  const current=document.documentElement.getAttribute('data-theme')==='light'?'light':'dark';
+  const next=current==='light'?'dark':'light';
+  try{localStorage.setItem('theme',next)}catch(e){}
+  applyTheme(next);
+}
+// Init theme
+(function(){
+  let theme;
+  try{theme=localStorage.getItem('theme')}catch(e){}
+  if(!theme)theme=getSystemTheme();
+  applyTheme(theme);
+  window.matchMedia('(prefers-color-scheme:light)').addEventListener('change',e=>{
+    try{if(!localStorage.getItem('theme'))applyTheme(e.matches?'light':'dark')}catch(ex){applyTheme(e.matches?'light':'dark')}
+  });
+})();
+
 function openHelp(){document.getElementById('helpModal').classList.add('open')}
 function closeHelp(){document.getElementById('helpModal').classList.remove('open')}
 
