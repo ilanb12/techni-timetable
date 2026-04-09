@@ -125,64 +125,42 @@ function parseChangesTableView(html) {
           // Append remaining TTLesson divs (unchanged הקבצות)
           if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else if (fillChange) {
-          // Shahaf uses: "original -> substitute, subject room" or "original <- substitute"
-          // In HTML: -> may be encoded as -&gt; and <- as &lt;-
+          // Shahaf format: "original <- substitute, subject room"
+          // e.g. "כהן שילת <- בוטקר אילן, מבוא לתכנות 421 - (ט'4)"
           const rawHtml = fillChange[1].replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ');
+          const hasArrow = rawHtml.includes('<-');
           
-          // Detect arrow direction in raw HTML before stripping
-          const hasRightArrow = rawHtml.includes('-&gt;') || rawHtml.includes('->');
-          const hasLeftArrow = rawHtml.includes('&lt;-') || rawHtml.includes('<-');
-          
-          // Decode entities and strip HTML tags
-          const rawText = rawHtml.replace(/<[^>]+>/g, ' ')
+          // Strip HTML tags carefully — protect <- by replacing first
+          const rawText = rawHtml.replace(/<-/g, '⟵').replace(/<[^>]+>/g, ' ')
             .replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&')
             .replace(/\s+/g, ' ').trim();
 
           let substitute = '', subj = '';
           
-          if (hasRightArrow && rawText.includes('->')) {
-            // "original -> substitute, subject room"
-            // e.g. "כהן שילת -> בוטקר אילן, מבוא לתכנות 421 - (ט'4)"
-            const afterArrow = rawText.split('->')[1].trim();
+          if (hasArrow && rawText.includes('⟵')) {
+            // "original ⟵ substitute, subject room"
+            const afterArrow = rawText.split('⟵')[1].trim();
+            // afterArrow = "בוטקר אילן, מבוא לתכנות 421 - (ט'4)"
             const commaIdx = afterArrow.indexOf(',');
             if (commaIdx > 0) {
               substitute = afterArrow.substring(0, commaIdx).trim();
+              subj = afterArrow.substring(commaIdx + 1).trim();
+              // Remove room number from subject (e.g. "מבוא לתכנות 421 - (ט'4)" -> "מבוא לתכנות")
+              subj = subj.replace(/\s*\d{3}\s*[-–]?\s*\(.*$/, '').trim();
             } else {
               substitute = afterArrow;
             }
+            // Also try TTLesson <b> tag for cleaner subject name
             const bMatch = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
-            subj = bMatch ? cleanHtml(bMatch[1]) : '';
-          } else if (hasLeftArrow && rawText.includes('<-')) {
-            // "substitute <- original room"
-            substitute = rawText.split('<-')[0].trim();
-            const bMatch = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
-            subj = bMatch ? cleanHtml(bMatch[1]) : '';
-          } else if (hasRightArrow || hasLeftArrow) {
-            // Arrow was in HTML but got mangled — try to extract from raw HTML directly
-            let decoded = rawHtml.replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&').replace(/&#39;/g, "'");
-            decoded = decoded.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-            if (decoded.includes('->')) {
-              const afterArrow = decoded.split('->')[1].trim();
-              const commaIdx = afterArrow.indexOf(',');
-              substitute = commaIdx > 0 ? afterArrow.substring(0, commaIdx).trim() : afterArrow;
-            } else if (decoded.includes('<-')) {
-              substitute = decoded.split('<-')[0].trim();
-            }
-            const bMatch = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
-            subj = bMatch ? cleanHtml(bMatch[1]) : '';
+            if (bMatch) subj = cleanHtml(bMatch[1]);
           } else if (rawText.includes(',')) {
             // No arrow — simple "original, subject" format
-            const parts = rawText.split(',').map(s => s.trim());
-            const miluiIdx = parts.findIndex(p => p.includes('מילוי מקום'));
-            if (miluiIdx > 0) {
-              substitute = parts[miluiIdx].replace('מילוי מקום', '').trim();
-              subj = parts.slice(miluiIdx + 1).join(', ').trim();
-            } else {
-              subj = parts.slice(1).join(', ').trim();
-              substitute = '';
-            }
+            const clean = rawText.replace(/⟵/g, '');
+            const parts = clean.split(',').map(s => s.trim());
+            subj = parts.slice(1).join(', ').trim();
+            substitute = '';
           } else {
-            subj = rawText;
+            subj = rawText.replace(/⟵/g, '');
           }
 
           cellText = '[החלפה] ' + (subj || substitute);
