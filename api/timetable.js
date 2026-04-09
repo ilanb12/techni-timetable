@@ -125,47 +125,59 @@ function parseChangesTableView(html) {
           // Append remaining TTLesson divs (unchanged הקבצות)
           if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else if (fillChange) {
-          // Two formats from Shahaf:
-          // Type 1: "original -> substitute, subject room" (with TTLesson below)
-          //   e.g. "כהן שילת -> בוטקר אילן, מבוא לתכנות 421 - (ט'4)"
-          // Type 2: "original, subject" (no arrow, no TTLesson)
-          //   e.g. "כהן שילת, חשמל"
+          // Shahaf uses: "original -> substitute, subject room" or "original <- substitute"
+          // In HTML: -> may be encoded as -&gt; and <- as &lt;-
           const rawHtml = fillChange[1].replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ');
-          const rawText = rawHtml.replace(/<[^>]+>/g, '').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&').trim();
+          
+          // Detect arrow direction in raw HTML before stripping
+          const hasRightArrow = rawHtml.includes('-&gt;') || rawHtml.includes('->');
+          const hasLeftArrow = rawHtml.includes('&lt;-') || rawHtml.includes('<-');
+          
+          // Decode entities and strip HTML tags
+          const rawText = rawHtml.replace(/<[^>]+>/g, ' ')
+            .replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&')
+            .replace(/\s+/g, ' ').trim();
 
           let substitute = '', subj = '';
-          if (rawText.includes('->')) {
-            // Type 1: "original -> substitute, subject room"
+          
+          if (hasRightArrow && rawText.includes('->')) {
+            // "original -> substitute, subject room"
+            // e.g. "כהן שילת -> בוטקר אילן, מבוא לתכנות 421 - (ט'4)"
             const afterArrow = rawText.split('->')[1].trim();
-            // afterArrow = "בוטקר אילן, מבוא לתכנות 421 - (ט'4)"
             const commaIdx = afterArrow.indexOf(',');
             if (commaIdx > 0) {
               substitute = afterArrow.substring(0, commaIdx).trim();
-              // subject from rest or from TTLesson
             } else {
               substitute = afterArrow;
             }
-            // Get subject from TTLesson <b> tag (more reliable)
             const bMatch = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
             subj = bMatch ? cleanHtml(bMatch[1]) : '';
-          } else if (rawText.includes('<-')) {
-            // Alternate arrow format: "substitute <- original room"
-            const beforeArrow = rawText.split('<-')[0].trim();
-            substitute = beforeArrow;
+          } else if (hasLeftArrow && rawText.includes('<-')) {
+            // "substitute <- original room"
+            substitute = rawText.split('<-')[0].trim();
+            const bMatch = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
+            subj = bMatch ? cleanHtml(bMatch[1]) : '';
+          } else if (hasRightArrow || hasLeftArrow) {
+            // Arrow was in HTML but got mangled — try to extract from raw HTML directly
+            let decoded = rawHtml.replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&').replace(/&#39;/g, "'");
+            decoded = decoded.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+            if (decoded.includes('->')) {
+              const afterArrow = decoded.split('->')[1].trim();
+              const commaIdx = afterArrow.indexOf(',');
+              substitute = commaIdx > 0 ? afterArrow.substring(0, commaIdx).trim() : afterArrow;
+            } else if (decoded.includes('<-')) {
+              substitute = decoded.split('<-')[0].trim();
+            }
             const bMatch = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
             subj = bMatch ? cleanHtml(bMatch[1]) : '';
           } else if (rawText.includes(',')) {
-            // Type 2: "original, subject" — the "original" is being replaced, subject stays
-            // In changes list: "כהן שילת, מילוי מקום בוטקר אילן, מבוא לתכנות"
-            // In cell: "כהן שילת, חשמל" — first is original teacher, second is subject
+            // No arrow — simple "original, subject" format
             const parts = rawText.split(',').map(s => s.trim());
-            // Check if any part contains "מילוי מקום" to find substitute
             const miluiIdx = parts.findIndex(p => p.includes('מילוי מקום'));
             if (miluiIdx > 0) {
               substitute = parts[miluiIdx].replace('מילוי מקום', '').trim();
               subj = parts.slice(miluiIdx + 1).join(', ').trim();
             } else {
-              // Simple format: "teacher, subject" — no substitute info in cell
               subj = parts.slice(1).join(', ').trim();
               substitute = '';
             }
@@ -175,7 +187,6 @@ function parseChangesTableView(html) {
 
           cellText = '[החלפה] ' + (subj || substitute);
           if (substitute) cellText += '\nמחליף: ' + substitute;
-          // Append remaining TTLesson divs (other הקבצות that didn't change)
           if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else cellText = lessonTexts.join('\n');
         // Final aggressive cleanup
