@@ -125,24 +125,50 @@ function parseChangesTableView(html) {
           // Append remaining TTLesson divs (unchanged הקבצות)
           if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else if (fillChange) {
-          // Two formats:
-          // Type 1: "substitute <- original room" (with TTLesson below)
-          // Type 2: "substitute, subject" (no TTLesson)
+          // Two formats from Shahaf:
+          // Type 1: "original -> substitute, subject room" (with TTLesson below)
+          //   e.g. "כהן שילת -> בוטקר אילן, מבוא לתכנות 421 - (ט'4)"
+          // Type 2: "original, subject" (no arrow, no TTLesson)
+          //   e.g. "כהן שילת, חשמל"
           const rawHtml = fillChange[1].replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
           const rawText = rawHtml.replace(/<[^>]+>/g, '').trim();
 
           let substitute = '', subj = '';
-          if (rawText.includes('<-')) {
-            // Type 1: "אהרוני יובל <- רצון אלמוג 519 מעבדת מחשבים (יא')"
-            substitute = rawText.split('<-')[0].trim();
-            // Get subject from TTLesson <b> tag
+          if (rawText.includes('->')) {
+            // Type 1: "original -> substitute, subject room"
+            const afterArrow = rawText.split('->')[1].trim();
+            // afterArrow = "בוטקר אילן, מבוא לתכנות 421 - (ט'4)"
+            const commaIdx = afterArrow.indexOf(',');
+            if (commaIdx > 0) {
+              substitute = afterArrow.substring(0, commaIdx).trim();
+              // subject from rest or from TTLesson
+            } else {
+              substitute = afterArrow;
+            }
+            // Get subject from TTLesson <b> tag (more reliable)
+            const bMatch = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
+            subj = bMatch ? cleanHtml(bMatch[1]) : '';
+          } else if (rawText.includes('<-')) {
+            // Alternate arrow format: "substitute <- original room"
+            const beforeArrow = rawText.split('<-')[0].trim();
+            substitute = beforeArrow;
             const bMatch = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
             subj = bMatch ? cleanHtml(bMatch[1]) : '';
           } else if (rawText.includes(',')) {
-            // Type 2: "כהן שילת, חשמל"
+            // Type 2: "original, subject" — the "original" is being replaced, subject stays
+            // In changes list: "כהן שילת, מילוי מקום בוטקר אילן, מבוא לתכנות"
+            // In cell: "כהן שילת, חשמל" — first is original teacher, second is subject
             const parts = rawText.split(',').map(s => s.trim());
-            substitute = parts[0] || '';
-            subj = parts.slice(1).join(', ').trim();
+            // Check if any part contains "מילוי מקום" to find substitute
+            const miluiIdx = parts.findIndex(p => p.includes('מילוי מקום'));
+            if (miluiIdx > 0) {
+              substitute = parts[miluiIdx].replace('מילוי מקום', '').trim();
+              subj = parts.slice(miluiIdx + 1).join(', ').trim();
+            } else {
+              // Simple format: "teacher, subject" — no substitute info in cell
+              subj = parts.slice(1).join(', ').trim();
+              substitute = '';
+            }
           } else {
             subj = rawText;
           }
