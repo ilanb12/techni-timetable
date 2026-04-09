@@ -130,8 +130,8 @@ function parseChangesTableView(html) {
           //   e.g. "כהן שילת -> בוטקר אילן, מבוא לתכנות 421 - (ט'4)"
           // Type 2: "original, subject" (no arrow, no TTLesson)
           //   e.g. "כהן שילת, חשמל"
-          const rawHtml = fillChange[1].replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
-          const rawText = rawHtml.replace(/<[^>]+>/g, '').trim();
+          const rawHtml = fillChange[1].replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ');
+          const rawText = rawHtml.replace(/<[^>]+>/g, '').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&').trim();
 
           let substitute = '', subj = '';
           if (rawText.includes('->')) {
