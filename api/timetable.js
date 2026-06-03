@@ -155,6 +155,20 @@ function parseChangesTableView(html) {
             } else {
               substitute = afterArrow;
             }
+            // Teacher-side room layout: the room can ride on the substitute
+            // name instead of the subject, e.g. "שמיש רונית 415 (ט'2)".
+            // Teacher names never contain digits, so a 3-4 digit run there is
+            // the room. Lift it into `room` and strip it (plus any trailing
+            // class qualifier) off the displayed substitute name.
+            if (!room && substitute) {
+              const subRoom = substitute.match(/\b(\d{3,4})\b/);
+              if (subRoom) {
+                room = subRoom[1];
+                substitute = substitute
+                  .replace(/\s*\b\d{3,4}\b\s*(?:[-–]?\s*\([^)]*\))?\s*$/, '')
+                  .trim();
+              }
+            }
             // Also try TTLesson <b> tag for cleaner subject name
             const bMatch = cellContent.match(/<b>([\s\S]*?)<\/b>/i);
             if (bMatch) subj = cleanHtml(bMatch[1]);
