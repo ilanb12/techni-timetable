@@ -135,18 +135,23 @@ function parseChangesTableView(html) {
             .replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&')
             .replace(/\s+/g, ' ').trim();
 
-          let substitute = '', subj = '';
-          
+          let substitute = '', subj = '', original = '', room = '';
+
           if (hasArrow && rawText.includes('⟵')) {
             // "original ⟵ substitute, subject room"
-            const afterArrow = rawText.split('⟵')[1].trim();
+            const arrowParts = rawText.split('⟵');
+            original = arrowParts[0].trim();
+            const afterArrow = arrowParts[1].trim();
             // afterArrow = "בוטקר אילן, מבוא לתכנות 421 - (ט'4)"
             const commaIdx = afterArrow.indexOf(',');
             if (commaIdx > 0) {
               substitute = afterArrow.substring(0, commaIdx).trim();
-              subj = afterArrow.substring(commaIdx + 1).trim();
+              const subjWithRoom = afterArrow.substring(commaIdx + 1).trim();
+              // Capture the room (first 3-4 digit number) before stripping.
+              const roomMatch = subjWithRoom.match(/(\d{3,4})/);
+              if (roomMatch) room = roomMatch[1];
               // Remove room number from subject (e.g. "מבוא לתכנות 421 - (ט'4)" -> "מבוא לתכנות")
-              subj = subj.replace(/\s*\d{3}\s*[-–]?\s*\(.*$/, '').trim();
+              subj = subjWithRoom.replace(/\s*\d{3}\s*[-–]?\s*\(.*$/, '').trim();
             } else {
               substitute = afterArrow;
             }
@@ -165,6 +170,13 @@ function parseChangesTableView(html) {
 
           cellText = '[החלפה] ' + (subj || substitute);
           if (substitute) cellText += '\nמחליף: ' + substitute;
+          // Preserve the original teacher being replaced — consumers can opt
+          // to display it (e.g., "מחליף: X במקום Y"). Older consumers that
+          // read only the first two lines after the marker still work.
+          if (original) cellText += '\nבמקום: ' + original;
+          // Preserve the room of the substituted lesson so consumers can
+          // show where the lesson will actually be held today.
+          if (room) cellText += '\nחדר: ' + room;
           if (lessonTexts.length) cellText += '\n' + lessonTexts.join('\n');
         } else cellText = lessonTexts.join('\n');
         // Final aggressive cleanup
