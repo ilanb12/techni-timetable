@@ -352,90 +352,72 @@ function openHelp(){document.getElementById('helpModal').classList.add('open')}
 function closeHelp(){document.getElementById('helpModal').classList.remove('open')}
 
 const MAX_HOURS=12;
-const CLASSES=[{id:"1",name:"ט - 1"},{id:"2",name:"ט - 2"},{id:"3",name:"ט - 3"},{id:"4",name:"ט - 4"},{id:"5",name:"ט - 5"},{id:"6",name:"ט - 6"},{id:"46",name:"ט - 7"},{id:"54",name:"ט - 8"},{id:"57",name:"י - 1 תוכנה"},{id:"11",name:"י - 2 אלק'"},{id:"13",name:"י - 3 חשמל"},{id:"14",name:"י - 4 חשמל"},{id:"15",name:"י - 5 חשמל"},{id:"16",name:"י - 6 מכטרוניקה"},{id:"47",name:"י - 7 תעופה"},{id:"48",name:"י - 8 תעופה"},{id:"19",name:"יא-1 תוכנה"},{id:"20",name:"יא - 2 אלק'"},{id:"21",name:"יא - 3 חשמל"},{id:"22",name:"יא - 4 חשמל"},{id:"23",name:"יא - 5 חשמל"},{id:"24",name:"יא - 6 מכטרוניקה"},{id:"50",name:"יא - 7 תעופה"},{id:"51",name:"יא - 8 תעופה"},{id:"59",name:"יב-1 תעופה"},{id:"30",name:"יב - 2 תעופה"},{id:"31",name:"יב - 3 תעופה"},{id:"32",name:"יב - 4 מכטרוניקה"},{id:"33",name:"יב - 5 חשמל"},{id:"34",name:"יב - 6 חשמל"},{id:"52",name:"יב - 7 אלק'"},{id:"53",name:"יב - 8 תוכנה"},{id:"39",name:"יג-1 אלק'"},{id:"40",name:"יג-2 חשמל"},{id:"41",name:"יג-3 תעופה"},{id:"55",name:"יג-3 מכטרוניקה"},{id:"43",name:"יד-1 אלק'"},{id:"44",name:"יד-2 חשמל"},{id:"45",name:"יד-3 תעופה"},{id:"56",name:"יד-3 מכטרוניקה"}];
+const CLASSES=[{id:"1",name:"ט - 1"},{id:"2",name:"ט - 2"},{id:"3",name:"ט - 3"},{id:"4",name:"ט - 4"},{id:"5",name:"ט - 5"},{id:"6",name:"ט - 6"},{id:"46",name:"ט - 7"},{id:"54",name:"ט - 8"},{id:"57",name:"י - 1 תוכנה"},{id:"11",name:"י - 2 אלק'"},{id:"13",name:"י - 3 חשמל"},{id:"14",name:"י - 4 חשמל"},{id:"15",name:"י - 5 חשמל"},{id:"16",name:"י - 6 מכטרוניקה"},{id:"47",name:"י - 7 תעופה"},{id:"48",name:"י - 8 תעופה"},{id:"19",name:"יא-1 תוכנה"},{id:"20",name:"יא - 2 אלק'"},{id:"21",name:"יא - 3 חשמל"},{id:"22",name:"יא - 4 חשמל"},{id:"23",name:"יא - 5 חשמל"},{id:"24",name:"יא - 6 מכטרוניקה"},{id:"50",name:"יא - 7 תעופה"},{id:"51",name:"יא - 8 תעופה"},{id:"59",name:"יב-1 תוכנה"},{id:"30",name:"יב - 2 אלק'"},{id:"31",name:"יב - 3 חשמל"},{id:"32",name:"יב - 4 חשמל"},{id:"33",name:"יב - 5 חשמל"},{id:"34",name:"יב - 6 מכטרוניקה"},{id:"52",name:"יב - 7 תעופה"},{id:"53",name:"יב - 8 תעופה"},{id:"39",name:"יג - 1 אלק'"},{id:"40",name:"יג - 2 חשמל"},{id:"41",name:"יג - 3 תעופה"},{id:"55",name:"יג - 3 מכטרוניקה"},{id:"43",name:"יד - 1 אלק'"},{id:"44",name:"יד - 2 חשמל"},{id:"45",name:"יד - 3 תעופה"},{id:"56",name:"יד - 3 מכטרוניקה"}];
 const HT=[{s:"08:00",e:"08:15"},{s:"08:15",e:"09:00"},{s:"09:00",e:"09:45"},{s:"09:55",e:"10:45"},{s:"11:00",e:"11:45"},{s:"11:55",e:"12:40"},{s:"12:50",e:"13:35"},{s:"13:45",e:"14:25"},{s:"14:40",e:"15:20"},{s:"15:30",e:"16:10"},{s:"16:20",e:"17:00"},{s:"17:05",e:"17:45"}];
 const GRID_VIEWS=['TimeTable','ChangesTable'];
 const EMPTY_LABELS={Changes:'שינויים',Exams:'מבחנים',Messages:'הודעות',Events:'אירועים'};
 let currentView='TimeTable',currentData=null,selectedDay=-1,weekOffset=0;
 
-[document.getElementById('mClassSelect'),document.getElementById('dClassSelect')].forEach(sel=>{CLASSES.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o)})});
+function savedClass(){try{return localStorage.getItem('selectedClass')}catch(e){return null}}
+function populateClasses(list){
+  const want=[document.getElementById('mClassSelect').value,savedClass()].find(Boolean);
+  [document.getElementById('mClassSelect'),document.getElementById('dClassSelect')].forEach(sel=>{
+    sel.innerHTML='';
+    list.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o)});
+    if(want&&list.some(c=>c.id===want))sel.value=want;
+  });
+}
+populateClasses(CLASSES);
 document.getElementById('mClassSelect').onchange=()=>{document.getElementById('dClassSelect').value=document.getElementById('mClassSelect').value;try{localStorage.setItem('selectedClass',document.getElementById('mClassSelect').value)}catch(e){}loadData()};
 document.getElementById('dClassSelect').onchange=()=>{document.getElementById('mClassSelect').value=document.getElementById('dClassSelect').value;try{localStorage.setItem('selectedClass',document.getElementById('dClassSelect').value)}catch(e){}loadData()};
-try{const saved=localStorage.getItem('selectedClass');if(saved){document.getElementById('mClassSelect').value=saved;document.getElementById('dClassSelect').value=saved}}catch(e){}
+// Class names change each year as cohorts move up, so refresh them from the API.
+fetch('/api/classes').then(r=>r.json()).then(d=>{if(d.classes&&d.classes.length)populateClasses(d.classes)}).catch(()=>{});
 
-function parseSL(l){let s=l,r='',d=0,re=-1,rs=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(re===-1)re=i;d++}else if(l[i]==='('){d--;if(d===0){rs=i;break}}}if(rs>0&&re>rs){const inside=l.substring(rs+1,re);if(/\d|מעבדת|חדר|אולם|מגרש|ספריה|הקבצה|מקוון/.test(inside)){r=inside;s=l.substring(0,rs).trim()}}return{subject:s,room:r}}
-function parseT(l){let d=0,e=-1,s=-1;for(let i=l.length-1;i>=0;i--){if(l[i]===')'){if(e===-1)e=i;d++}else if(l[i]==='('){d--;if(d===0){s=i;break}}}if(s>0&&e>s){const inside=l.substring(s+1,e);if(/\d/.test(inside))return l.substring(0,s).trim()}return l.trim()}
-
-function parseLessons(text){
-  if(!text||!text.trim())return[];let ct=null;
-  if(text.startsWith('[ביטול]')){ct='cancelled';text=text.substring(7).trim()}else if(text.startsWith('[החלפה]')){ct='changed';text=text.substring(7).trim()}
-  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);if(!lines.length)return[];
-  if(ct){const subj=lines[0]||'';const teacher=lines.length>1?lines[1]:'';return[{subject:subj,teacher:teacher,room:'',changeType:ct}]}
-  // Shahaf data alternates: subject line, then teacher line
-  // Subject lines have parentheses with digits (room), or are the first of a pair
-  // Strategy: walk lines in pairs. If a line has (digits) or is followed by a plain name, it's subject+teacher
-  const g=[];let i=0;
-  function looksLikeTeacher(l){
-    if(!l||l.startsWith('['))return false;
-    if(l.split(/\s+/).length>5)return false;
-    // If has parens with digits → it's a subject with room, not a teacher
-    if(/\(\s*\d/.test(l))return false;
-    if(/\d{3}/.test(l))return false; // room numbers are 3+ digits
-    if(/מעבדת|חדר|אולם|מגרש|ספריה|הקבצה|מקוון/.test(l))return false;
-    return true;
-  }
-  while(i<lines.length){
-    const cur=lines[i];
-    const next=i+1<lines.length?lines[i+1]:null;
-    const p=parseSL(cur);
-    if(next && looksLikeTeacher(next)){
-      g.push({subject:p.subject,teacher:next,room:p.room,changeType:null});
-      i+=2;
-    } else if(!next){
-      g.push({subject:p.subject,teacher:'',room:p.room,changeType:null});
-      i++;
-    } else {
-      g.push({subject:p.subject,teacher:'',room:p.room,changeType:null});
-      i++;
-    }
-  }
-  return g.length?g:[{subject:lines[0],teacher:'',room:'',changeType:null}];
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+// Hour numbering and bell times come from the timetable itself; HT is the fallback.
+function hourAt(i){
+  const t=currentData&&currentData.hourTimes&&currentData.hourTimes[i];
+  if(t)return{n:t.index,s:t.start,e:t.end};
+  const f=HT[i]||{s:'',e:''};return{n:i,s:f.s,e:f.e};
 }
-
-function lType(g){if(!g)return'empty';if(g.changeType==='cancelled')return'cancelled';if(g.changeType==='changed')return'changed';const s=g.subject;if(s.startsWith('[מבחן]'))return'exam';if(s.startsWith('[אירוע]'))return'event';if(s.includes('ארוחת צהרים'))return'break';if(s.includes('מסדר'))return'formation';if(s.includes('חינוך גופני'))return'pe';return'regular'}
+// A substitution names both teachers; a normal lesson just has the one.
+function subLine(g){
+  if(g.type==='changed'&&g.substitute)return 'מחליף: '+g.substitute+(g.original?' במקום '+g.original:'');
+  return g.teacher||'';
+}
 function typeIcon(t){return{break:'🍽️ ',formation:'🫡 ',pe:'🏃 ',cancelled:'❌ ',changed:'🔁 ',exam:'📝 ',event:'📌 '}[t]||''}
-function isCur(h){const now=new Date(),t=HT[h];if(!t)return false;const[sh,sm]=t.s.split(':').map(Number),[eh,em]=t.e.split(':').map(Number),c=now.getHours()*60+now.getMinutes();return c>=sh*60+sm&&c<=eh*60+em}
+function isCur(h){const now=new Date(),t=hourAt(h);if(!t.s||!t.e)return false;const[sh,sm]=t.s.split(':').map(Number),[eh,em]=t.e.split(':').map(Number),c=now.getHours()*60+now.getMinutes();return c>=sh*60+sm&&c<=eh*60+em}
 
 // MOBILE
 function renderMDayTabs(data){const tabs=document.getElementById('mDayTabs');tabs.innerHTML='';if(!data.days)return;const ti=data.days.findIndex(d=>d.isToday);if(selectedDay<0)selectedDay=ti>=0?ti:0;data.days.forEach((d,i)=>{if(!d.name)return;const b=document.createElement('button');b.className='m-day-tab'+(i===selectedDay?' active':'');b.innerHTML='<span class="day-name">'+d.name.replace('יום ','')+'</span><span class="day-date">'+d.date+'</span>';b.onclick=()=>{selectedDay=i;renderMDay()};tabs.appendChild(b)});setTimeout(()=>{const a=tabs.querySelector('.active');if(a)a.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})},50)}
 
 function renderMDay(){document.querySelectorAll('.m-day-tab').forEach((t,i)=>t.classList.toggle('active',i===selectedDay));const c=document.getElementById('mContent');if(!currentData||!currentData.days||!currentData.days[selectedDay]){c.innerHTML='<div class="m-empty"><div class="m-empty-icon">📋</div>אין נתונים</div>';return}
-const day=currentData.days[selectedDay],hours=Math.min(currentData.hours,MAX_HOURS);let html='',has=false;
-for(let h=0;h<hours;h++){const lt=h<day.lessons.length?day.lessons[h]:'';const groups=parseLessons(lt);if(!groups.length)continue;const type=lType(groups[0]);if(type==='empty')continue;has=true;const ic=isCur(h)&&day.isToday,t=HT[h]||{s:'',e:''};
-html+='<div class="m-lesson-card '+type+(ic?' current':'')+'"><div class="m-hour-badge"><div class="m-hour-num">'+h+'</div><div class="m-hour-time">'+t.s+'<br>'+t.e+'</div></div><div class="m-lesson-info">';
-groups.forEach((g,gi)=>{if(gi>0)html+='<div class="m-group-sep"></div>';html+='<div class="m-lesson-subject">'+typeIcon(lType(g))+g.subject+'</div>';if(g.teacher)html+='<div class="m-lesson-teacher">'+g.teacher+'</div>';if(g.room)html+='<div class="m-lesson-room">'+g.room+'</div>'});
+const day=currentData.days[selectedDay],hours=Math.min(day.lessons.length,MAX_HOURS);let html='',has=false;
+for(let h=0;h<hours;h++){const groups=day.lessons[h]||[];if(!groups.length)continue;has=true;const ic=isCur(h)&&day.isToday,t=hourAt(h);
+html+='<div class="m-lesson-card '+groups[0].type+(ic?' current':'')+'"><div class="m-hour-badge"><div class="m-hour-num">'+t.n+'</div><div class="m-hour-time">'+t.s+'<br>'+t.e+'</div></div><div class="m-lesson-info">';
+groups.forEach((g,gi)=>{if(gi>0)html+='<div class="m-group-sep"></div>';html+='<div class="m-lesson-subject">'+typeIcon(g.type)+esc(g.subject)+'</div>';const sub=subLine(g);if(sub)html+='<div class="m-lesson-teacher">'+esc(sub)+'</div>';if(g.room)html+='<div class="m-lesson-room">'+esc(g.room)+'</div>'});
 html+='</div></div>'}
 if(!has)html='<div class="m-empty"><div class="m-empty-icon">😎</div>אין שיעורים ביום הזה</div>';c.innerHTML=html}
 
 function renderMList(items,vt){const c=document.getElementById('mContent');if(!items||!items.length){c.innerHTML='<div class="m-empty"><div class="m-empty-icon">✅</div>אין '+(EMPTY_LABELS[vt]||'נתונים')+'</div>';return}
-const s={Changes:'',Exams:'exam',Events:'event',Messages:'message'}[vt]||'';let html='';items.forEach(i=>{html+='<div class="m-change-card '+s+'"><div class="m-change-hour">'+(i.hour||'—')+'</div><div style="flex:1"><div class="m-change-type">'+(i.type||'')+'</div>'+(i.teacher?'<div class="m-change-teacher">'+i.teacher+'</div>':'')+'<div class="m-change-date">'+(i.date||'')+'</div></div></div>'});c.innerHTML=html}
+const s={Changes:'',Exams:'exam',Events:'event',Messages:'message'}[vt]||'';let html='';items.forEach(i=>{const meta=[i.teacher,i.room?'חדר: '+i.room:''].filter(Boolean).join(' · ');html+='<div class="m-change-card '+s+'"><div class="m-change-hour">'+esc(i.hour||'—')+'</div><div style="flex:1"><div class="m-change-type">'+esc(i.type||'')+'</div>'+(meta?'<div class="m-change-teacher">'+esc(meta)+'</div>':'')+'<div class="m-change-date">'+esc(i.date||'')+'</div></div></div>'});c.innerHTML=html}
 
 // DESKTOP
 function renderDTable(data){const el=document.getElementById('dContent');if(!data.days||!data.days.length){el.innerHTML='<div style="text-align:center;padding:60px;color:var(--text-dim)">אין נתונים</div>';return}
 const hours=Math.min(data.hours,MAX_HOURS);let html='<table class="tt"><thead><tr><th>שעה</th>';
-data.days.forEach(d=>{html+='<th class="'+(d.isToday?'today':'')+'">'+d.name+'<br><span style="font-weight:400;font-size:11px;color:var(--text-dim)">'+d.date+'</span></th>'});
+data.days.forEach(d=>{html+='<th class="'+(d.isToday?'today':'')+'">'+esc(d.name)+'<br><span style="font-weight:400;font-size:11px;color:var(--text-dim)">'+esc(d.date)+'</span></th>'});
 html+='</tr></thead><tbody>';
-for(let h=0;h<hours;h++){const t=HT[h]||{s:'',e:''},ic=isCur(h);html+='<tr><td><div class="h-num">'+h+'</div><div class="h-time">'+t.s+'<br>'+t.e+'</div></td>';
-data.days.forEach(d=>{const lt=h<d.lessons.length?d.lessons[h]:'';const groups=parseLessons(lt);const type=groups.length?lType(groups[0]):'empty';const cur=ic&&d.isToday?'cur':'';
+for(let h=0;h<hours;h++){const t=hourAt(h),ic=isCur(h);html+='<tr><td><div class="h-num">'+t.n+'</div><div class="h-time">'+t.s+'<br>'+t.e+'</div></td>';
+data.days.forEach(d=>{const groups=d.lessons[h]||[];const cur=ic&&d.isToday?'cur':'';
 html+='<td class="'+(d.isToday?'today-col':'')+'">';
 if(!groups.length)html+='<div class="cell"></div>';
-else{html+='<div class="cell has '+type+' '+cur+'">';groups.forEach((g,i)=>{if(i>0)html+='<div class="gsep"></div>';html+='<div class="subj">'+typeIcon(lType(g))+g.subject+'</div>'+(g.teacher?'<div class="tchr">'+g.teacher+'</div>':'')+(g.room?'<div class="room">'+g.room+'</div>':'')});html+='</div>'}
+else{html+='<div class="cell has '+groups[0].type+' '+cur+'">';groups.forEach((g,i)=>{if(i>0)html+='<div class="gsep"></div>';const sub=subLine(g);html+='<div class="subj">'+typeIcon(g.type)+esc(g.subject)+'</div>'+(sub?'<div class="tchr">'+esc(sub)+'</div>':'')+(g.room?'<div class="room">'+esc(g.room)+'</div>':'')});html+='</div>'}
 html+='</td>'});html+='</tr>'}
 html+='</tbody></table>';el.innerHTML=html}
 
 function renderDList(items,vt){const el=document.getElementById('dContent');if(!items||!items.length){el.innerHTML='<div style="text-align:center;padding:60px;color:var(--text-dim)">✅ אין '+(EMPTY_LABELS[vt]||'נתונים')+'</div>';return}
 const s={Changes:'',Exams:'exam',Events:'event',Messages:'message'}[vt]||'';let html='<div style="padding:20px;display:flex;flex-direction:column;gap:8px">';
-items.forEach(i=>{html+='<div class="m-change-card '+s+'"><div class="m-change-hour">'+(i.hour||'—')+'</div><div style="flex:1"><div class="m-change-type">'+(i.type||'')+'</div>'+(i.teacher?'<div class="m-change-teacher">'+i.teacher+'</div>':'')+'<div class="m-change-date">'+(i.date||'')+'</div></div></div>'});
+items.forEach(i=>{const meta=[i.teacher,i.room?'חדר: '+i.room:''].filter(Boolean).join(' · ');html+='<div class="m-change-card '+s+'"><div class="m-change-hour">'+esc(i.hour||'—')+'</div><div style="flex:1"><div class="m-change-type">'+esc(i.type||'')+'</div>'+(meta?'<div class="m-change-teacher">'+esc(meta)+'</div>':'')+'<div class="m-change-date">'+esc(i.date||'')+'</div></div></div>'});
 html+='</div>';el.innerHTML=html}
 
 function changeWeek(delta){weekOffset+=delta;selectedDay=-1;updateWeekLabels();loadData()}
@@ -454,12 +436,16 @@ function updateWeekLabels(){
 
 function switchView(v){currentView=v;document.querySelectorAll('.d-tab,.m-nav-item').forEach(t=>t.classList.toggle('active',t.dataset.view===v));document.getElementById('mDayTabs').style.display=GRID_VIEWS.includes(v)?'flex':'none';document.getElementById('mWeekNav').style.display=GRID_VIEWS.includes(v)?'flex':'none';loadData()}
 
+// Changing the class and the view in quick succession (or the 5-minute refresh
+// landing mid-switch) leaves two requests in flight; only the newest may render.
+let loadToken=0;
 async function loadData(){const mC=document.getElementById('mContent'),dC=document.getElementById('dContent');const ld='<div class="m-loading"><div class="m-spinner"></div><div style="color:var(--text-dim);font-size:13px">טוען...</div></div>';mC.innerHTML=ld;dC.innerHTML=ld;
 const cls=document.getElementById('mClassSelect').value||document.getElementById('dClassSelect').value;
-try{const r=await fetch('/api/timetable?classId='+cls+'&view='+currentView+'&week='+weekOffset);const data=await r.json();if(data.error)throw new Error(data.error);currentData=data;
+const view=currentView,token=++loadToken;
+try{const r=await fetch('/api/timetable?classId='+cls+'&view='+view+'&week='+weekOffset);const data=await r.json();if(token!==loadToken)return;if(data.error)throw new Error(data.error);currentData=data;
 const ts=data.updateTime?'עודכן: '+data.updateTime:'עודכן: '+new Date().toLocaleTimeString('he-IL');document.getElementById('mUpdateTime').textContent=ts;document.getElementById('dUpdateTime').textContent=ts;
-if(GRID_VIEWS.includes(currentView)){renderMDayTabs(data);renderMDay();renderDTable(data)}else{document.getElementById('mDayTabs').style.display='none';renderMList(data.changes,currentView);renderDList(data.changes,currentView)}
-}catch(e){console.error(e);const err='<div style="text-align:center;padding:40px;color:var(--text-dim)">⚠️ '+e.message+'<br><button onclick="loadData()" style="margin-top:12px;padding:8px 20px;background:var(--blue);color:white;border:none;border-radius:8px;font-family:Heebo;cursor:pointer">נסה שוב</button></div>';mC.innerHTML=err;dC.innerHTML=err}}
+if(GRID_VIEWS.includes(view)){renderMDayTabs(data);renderMDay();renderDTable(data)}else{document.getElementById('mDayTabs').style.display='none';renderMList(data.changes,view);renderDList(data.changes,view)}
+}catch(e){console.error(e);if(token!==loadToken)return;const err='<div style="text-align:center;padding:40px;color:var(--text-dim)">⚠️ '+esc(e.message)+'<br><button onclick="loadData()" style="margin-top:12px;padding:8px 20px;background:var(--blue);color:white;border:none;border-radius:8px;font-family:Heebo;cursor:pointer">נסה שוב</button></div>';mC.innerHTML=err;dC.innerHTML=err}}
 
 // PRINT
 let printMode='week';
@@ -477,7 +463,9 @@ function openPrint(){
 function closePrint(){document.getElementById('printModal').classList.remove('open')}
 function selectPrintMode(mode){
   printMode=mode;
-  document.querySelectorAll('.print-opt').forEach((o,i)=>{o.classList.toggle('selected',['week','day','range'][i]===mode);o.querySelector('input').checked=['week','day','range'][i]===mode});
+  // Scoped to .print-options: the compact-print checkbox reuses .print-opt and
+  // would otherwise be unchecked every time a mode is picked.
+  document.querySelectorAll('.print-options .print-opt').forEach((o,i)=>{o.classList.toggle('selected',['week','day','range'][i]===mode);o.querySelector('input').checked=['week','day','range'][i]===mode});
   document.getElementById('printDaySelect').classList.toggle('show',mode==='day');
   document.getElementById('printRangeSelect').classList.toggle('show',mode==='range');
 }
@@ -498,39 +486,41 @@ function doPrint(){
   const weekLabel=document.getElementById('dWeekLabel').textContent;
 
   let html='<h2>'+className+' — '+viewName+'</h2>';
-  html+='<div class="print-sub">'+weekLabel+(weekLabel==='השבוע'?'':' | ')+'הודפס: '+new Date().toLocaleDateString('he-IL')+'</div>';
+  html+='<div class="print-sub">'+esc(weekLabel)+' | הודפס: '+new Date().toLocaleDateString('he-IL')+'</div>';
   html+='<table><thead><tr><th>שעה</th>';
   selectedDays.forEach(d=>{html+='<th>'+d.name+'<br>'+d.date+'</th>'});
   html+='</tr></thead><tbody>';
   for(let h=0;h<hours;h++){
-    const t=HT[h]||{s:'',e:''};
+    const t=hourAt(h);
     let hasContent=false;
-    selectedDays.forEach(d=>{if(h<d.lessons.length&&d.lessons[h])hasContent=true});
+    selectedDays.forEach(d=>{if((d.lessons[h]||[]).length)hasContent=true});
     if(!hasContent)continue;
-    html+='<tr><td>'+h+'<br><span style="font-size:8px">'+t.s+'-'+t.e+'</span></td>';
+    html+='<tr><td>'+t.n+'<br><span style="font-size:8px">'+t.s+'-'+t.e+'</span></td>';
     selectedDays.forEach(d=>{
-      const lt=h<d.lessons.length?d.lessons[h]:'';
-      let groups=parseLessons(lt);
-      
+      let groups=d.lessons[h]||[];
+
       if(compact&&groups.length>1){
         // Check if all groups are the same base subject
-        const subjects=groups.map(g=>g.subject.replace(/\s*[א-ת]'?\d?\s*$/,'').replace(/\s*\d.*$/,'').trim());
+        // Strip a trailing track marker ("א'", "ב'2") and the level suffix ("4 יח'"),
+// but only when quoted/numeric — an unquoted final letter is part of the name
+// ("חינוך גופני" must not become "חינוך גופנ").
+        const subjects=groups.map(g=>g.subject.replace(/\s+[א-ת]'\d?\s*$/,'').replace(/\s+\d.*$/,'').trim());
         const allSame=subjects.every(s=>s===subjects[0]);
         if(allSame){
           // Collapse to just subject name
-          groups=[{subject:subjects[0],teacher:'',room:'',changeType:groups[0].changeType}];
+          groups=[{subject:subjects[0],teacher:'',room:'',type:groups[0].type}];
         }
         // If different subjects, keep all (e.g. class splits into different subjects)
       }
       
       if(!groups.length){html+='<td></td>';return}
-      const type=lType(groups[0]);
       html+='<td>';
       groups.forEach((g,gi)=>{
         if(gi>0)html+='<div class="p-sep"></div>';
-        html+='<div class="p-'+type+'"><div class="p-subj">'+g.subject+'</div>';
-        if(g.teacher)html+='<div class="p-tchr">'+g.teacher+'</div>';
-        if(g.room)html+='<div class="p-room">'+g.room+'</div>';
+        html+='<div class="p-'+g.type+'"><div class="p-subj">'+esc(g.subject)+'</div>';
+        const sub=subLine(g);
+        if(sub)html+='<div class="p-tchr">'+esc(sub)+'</div>';
+        if(g.room)html+='<div class="p-room">'+esc(g.room)+'</div>';
         html+='</div>';
       });
       html+='</td>';

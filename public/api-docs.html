@@ -39,7 +39,7 @@ a:hover{text-decoration:underline}
 <p>כל ה-endpoints מחזירים JSON, תומכים ב-CORS, ומשתמשים ב-cache של 2 דקות.</p>
 
 <h2>GET /api/classes</h2>
-<p>רשימת כל הכיתות במכללה</p>
+<p>רשימת כל הכיתות במכללה. הרשימה נקראת ישירות מאתר שחף (ומתעדכנת מעצמה בתחילת כל שנה), עם רשימת גיבוי סטטית אם האתר אינו זמין.</p>
 <pre><code>GET /api/classes
 
 Response:
@@ -49,7 +49,8 @@ Response:
     {"id": "57", "name": "י - 1 תוכנה"},
     ...
   ],
-  "total": 40
+  "total": 40,
+  "source": "live"
 }</code></pre>
 
 <h2>GET /api/hours</h2>
@@ -94,34 +95,45 @@ Response:
 
 Response:
 {
+  "classId": "1",
+  "view": "TimeTable",
+  "week": 0,
+  "updateTime": "31.08.2026 17:07",
+  "hours": 12,
+  "hourTimes": [
+    {"index": 0, "start": "08:00", "end": "08:15"},
+    ...
+  ],
   "days": [
     {
       "name": "יום ראשון",
-      "date": "22.03",
+      "date": "30.08",
       "isToday": true,
       "lessons": [
-        "מסדר בוקר\nראובן יוחנן",
-        "עברית (207 - מעבדת מחשבים)\nטיביב בוידיקמן מיריאנה",
+        [ {"subject": "מסדר בוקר", "teacher": "חסאר עומר יועד", "room": "", "type": "formation"} ],
+        [ {"subject": "היסטוריה", "teacher": "ענבי כרמית", "room": "401 - (ט'1)", "type": "regular"} ],
+        [],
         ...
       ]
     },
     ...
   ],
-  "hours": 12,
-  "changes": [],
-  "updateTime": "20.03.2026 13:41",
-  "week": 0
+  "changes": []
 }</code></pre>
 
-<p><strong>מבנה lessons:</strong> כל תא הוא string עם שורות מופרדות ב-<code>\n</code>. בהקבצות, כל הקבצה מורכבת משורת מקצוע (עם חדר בסוגריים) ואחריה שורת מורה.</p>
+<p><strong>מבנה lessons:</strong> מערך באורך <code>hours</code> — תא אחד לכל שעה, לפי הסדר של <code>hourTimes</code>. כל תא הוא מערך של שיעורים (הקבצה אחת לכל איבר), ותא ריק הוא מערך ריק. אין צורך לפרסר טקסט: המקצוע, המורה והחדר מגיעים בשדות נפרדים.</p>
 
-<p><strong>סימני שינויים:</strong></p>
+<p><strong>שדה <code>type</code> בכל שיעור:</strong></p>
 <table>
-<tr><th>קידומת</th><th>משמעות</th></tr>
-<tr><td><code>[ביטול]</code></td><td>שיעור מבוטל</td></tr>
-<tr><td><code>[החלפה]</code></td><td>מילוי מקום — שורה ראשונה: מקצוע, שורה שנייה: "מחליף: שם"</td></tr>
-<tr><td><code>[מבחן]</code></td><td>מבחן (רק ב-ChangesTable)</td></tr>
-<tr><td><code>[אירוע]</code></td><td>אירוע (רק ב-ChangesTable)</td></tr>
+<tr><th>ערך</th><th>משמעות</th></tr>
+<tr><td><code>regular</code></td><td>שיעור רגיל</td></tr>
+<tr><td><code>break</code></td><td>ארוחת צהריים</td></tr>
+<tr><td><code>formation</code></td><td>מסדר בוקר / יציאה</td></tr>
+<tr><td><code>pe</code></td><td>חינוך גופני</td></tr>
+<tr><td><code>cancelled</code></td><td>שיעור מבוטל (רק ב-ChangesTable)</td></tr>
+<tr><td><code>changed</code></td><td>מילוי מקום — בנוסף מוחזרים <code>original</code> (המורה המוחלף) ו-<code>substitute</code> (המחליף)</td></tr>
+<tr><td><code>exam</code></td><td>מבחן (רק ב-ChangesTable)</td></tr>
+<tr><td><code>event</code></td><td>אירוע (רק ב-ChangesTable)</td></tr>
 </table>
 
 <h3>List Response (Changes / Exams / Messages / Events)</h3>
@@ -137,6 +149,7 @@ Response:
       "hour": "5",
       "teacher": "שי (זריהן) עדן",
       "type": "ביטול מתמטיקה",
+      "room": "",
       "raw": "23.03.2026, שיעור 5, שי (זריהן) עדן, ביטול מתמטיקה"
     },
     ...
@@ -144,6 +157,8 @@ Response:
   "updateTime": "20.03.2026 13:41",
   "week": 0
 }</code></pre>
+
+<p>בתצוגת <code>Events</code>, <code>type</code> מכיל את שם האירוע, <code>teacher</code> את רשימת הכיתות, <code>room</code> את מקום האירוע, ו-<code>hour</code> יכול להיות טווח (למשל <code>"4-10"</code>).</p>
 
 <h2>GET /api/lesson <span class="badge">מומלץ</span></h2>
 <p>API מורחב — מחזיר שיעורים מפורסרים עם סינון מתקדם. כל שיעור מוחזר כאובייקט מובנה עם שדות נפרדים למקצוע, מורה, חדר וסוג.</p>
@@ -157,6 +172,7 @@ Response:
 <tr><td><code>day</code></td><td>integer</td><td>—</td><td>סנן יום: <code>0</code>=ראשון, <code>1</code>=שני ... <code>5</code>=שישי</td></tr>
 <tr><td><code>hour</code></td><td>integer</td><td>—</td><td>סנן שעה: <code>0</code>-<code>11</code></td></tr>
 <tr><td><code>fields</code></td><td>string</td><td>—</td><td>שדות לכלול בתגובה (מופרד בפסיקים): <code>subject,teacher,room,type,day,hour</code></td></tr>
+<tr><td><code>type</code></td><td>string</td><td>—</td><td>סנן לפי סוג (מופרד בפסיקים): <code>regular,break,formation,pe,cancelled,changed,exam,event</code></td></tr>
 <tr><td><code>search</code></td><td>string</td><td>—</td><td>חיפוש חופשי בשם מקצוע, מורה או חדר</td></tr>
 </table>
 
@@ -167,7 +183,7 @@ Response:
   "classId": "1",
   "view": "TimeTable",
   "week": 0,
-  "filters": {"day": null, "hour": null, "fields": null, "search": null},
+  "filters": {"day": null, "hour": null, "type": null, "fields": null, "search": null},
   "updateTime": "20.03.2026 13:41",
   "total": 42,
   "lessons": [
@@ -202,8 +218,8 @@ GET /api/lesson?classId=1&search=כהן שילת
 # חפש מתמטיקה
 GET /api/lesson?classId=1&search=מתמטיקה
 
-# מערכת עם שינויים, רק ביטולים
-GET /api/lesson?classId=1&view=ChangesTable&search=ביטול
+# מערכת עם שינויים, רק ביטולים ומילויי מקום
+GET /api/lesson?classId=1&view=ChangesTable&type=cancelled,changed
 
 # שעה 5 בכל הימים, רק מקצוע וחדר
 GET /api/lesson?classId=1&hour=5&fields=dayName,subject,room</code></pre>
@@ -221,6 +237,8 @@ GET /api/lesson?classId=1&hour=5&fields=dayName,subject,room</code></pre>
 <tr><td><code>teacher</code></td><td>string</td><td>שם המורה</td></tr>
 <tr><td><code>room</code></td><td>string</td><td>חדר</td></tr>
 <tr><td><code>type</code></td><td>string</td><td><code>regular</code> / <code>break</code> / <code>formation</code> / <code>pe</code> / <code>cancelled</code> / <code>changed</code> / <code>exam</code> / <code>event</code></td></tr>
+<tr><td><code>original</code></td><td>string</td><td>המורה המוחלף (רק כאשר <code>type</code> הוא <code>changed</code>)</td></tr>
+<tr><td><code>substitute</code></td><td>string</td><td>המורה המחליף (רק כאשר <code>type</code> הוא <code>changed</code>)</td></tr>
 <tr><td><code>groupIndex</code></td><td>integer</td><td>אינדקס הקבצה (0 אם אין הקבצות)</td></tr>
 <tr><td><code>totalGroups</code></td><td>integer</td><td>מספר הקבצות באותה שעה</td></tr>
 </table>
@@ -234,8 +252,8 @@ const data = await res.json();
 
 data.days.forEach(day => {
   console.log(day.name, day.date);
-  day.lessons.forEach((lesson, hour) => {
-    if (lesson) console.log(`  שעה ${hour}: ${lesson.split('\n')[0]}`);
+  day.lessons.forEach((slot, hour) => {
+    slot.forEach(l => console.log(`  שעה ${hour}: ${l.subject} — ${l.teacher} ${l.room}`));
   });
 });</code></pre>
 
@@ -252,9 +270,9 @@ data = requests.get('https://timetable-bistbash.vercel.app/api/timetable',
     params={'classId': '1', 'view': 'TimeTable'}).json()
 for day in data['days']:
     print(f"\n{day['name']} {day['date']}")
-    for i, lesson in enumerate(day['lessons']):
-        if lesson:
-            print(f"  שעה {i}: {lesson.split(chr(10))[0]}")</code></pre>
+    for i, slot in enumerate(day['lessons']):
+        for l in slot:
+            print(f"  שעה {i}: {l['subject']} — {l['teacher']} {l['room']}")</code></pre>
 
 <h3>cURL</h3>
 <pre><code># כל הכיתות
@@ -270,7 +288,7 @@ curl "https://timetable-bistbash.vercel.app/api/timetable?classId=1&view=Changes
 <p>ה-API מבוסס על scraping מאתר שחף ולכן:</p>
 <table>
 <tr><td>Cache</td><td>2 דקות — תוצאות נשמרות כדי לא להעמיס על שחף</td></tr>
-<tr><td>Timeout</td><td>30 שניות — שבועות רחוקים (3+) עלולים להיות איטיים</td></tr>
+<tr><td>Timeout</td><td>30 שניות</td></tr>
 <tr><td>Rate limit</td><td>אין הגבלה רשמית, אך שימוש מוגזם יכול לגרום לחסימה משחף</td></tr>
 </table>
 
